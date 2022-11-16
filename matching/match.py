@@ -3,8 +3,6 @@ from __future__ import annotations
 from functools import partial
 from typing import Callable, Sequence, Iterable, Union
 from munkres import DISALLOWED, make_cost_matrix, Munkres
-from numpy import ndarray
-
 from matching.read_in import read_candidates, read_roles
 from matching.scoring import score_skills, score_location, score_clearance
 from matching.models import Candidate, Role
@@ -17,7 +15,7 @@ def get_candidate_and_role_pair(candidate_i: int, role_i: int) -> tuple[Candidat
     return read_candidates()[candidate_i], read_roles()[role_i]
 
 
-def generate_grid(candidates: Sequence[Candidate], roles: Sequence[Role]) -> ndarray[int]:
+def generate_grid(candidates: Sequence[Candidate], roles: Sequence[Role]) -> np.ndarray[int]:
     match_func = partial(_match_candidate_to_role, {score_skills: 1, score_location: 1, score_clearance: 9})
     arr = np.array([match_func(c, r) for r in roles for c in candidates])
     return np.reshape(arr, (len(candidates), len(roles)))
@@ -27,11 +25,11 @@ def process_matches(matrix: list[list[Union[DISALLOWED, int]]]) -> Iterable[tupl
     yield from Munkres().compute(make_cost_matrix(matrix))
 
 
-def _disallow_blocked(matrix: ndarray[int]) -> ndarray[int | DISALLOWED]:
+def _disallow_blocked(matrix: np.ndarray[int]) -> np.ndarray[int | DISALLOWED]:
     return np.vectorize(lambda x: DISALLOWED if x < 0 else x)(matrix)
 
 
-def prepare_grid(matrix: ndarray[int]) -> list[list[DISALLOWED | int]]:
+def prepare_grid(matrix: np.ndarray[int]) -> list[list[DISALLOWED | int]]:
     return _disallow_blocked(matrix).tolist()  # type: ignore
 
 
