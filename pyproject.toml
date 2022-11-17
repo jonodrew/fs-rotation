@@ -16,6 +16,10 @@ numpy = "^1.23.4"
 [tool.poetry.group.test.dependencies]
 pytest = "^7.2.0"
 
+
+[tool.poetry.group.development.dependencies]
+pre-commit = "^2.20.0"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
