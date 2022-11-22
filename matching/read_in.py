@@ -32,4 +32,4 @@ def _correct_line(line_dict: dict[str, str]) -> dict[str, Union[int, str]]:
 
 def _read_and_create_objects(filepath: str, model: Type[Candidate] | Type[Role]) -> Sequence[Role | Candidate]:
     with open(filepath) as file:
-        return [model(_correct_line(**line)) for line in csv.DictReader(file)]
+        return [model(**_correct_line(line)) for line in csv.DictReader(file)]
