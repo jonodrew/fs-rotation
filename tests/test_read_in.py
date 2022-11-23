@@ -3,7 +3,6 @@ import uuid
 
 import pytest
 from matching.models import Candidate
-from matching.read_in import _read_and_create_objects
 
 departments = ["DWP", "HO", "MOJ", "MOD", "HMRC", "CO", "BEIS"]
 locations = [
@@ -49,6 +48,22 @@ def candidate_data():
     return [random_candidate() for i in range(50)]
 
 
-def test_candidate_read_in(candidate_data):
-    print(candidate_data)
-    _read_and_create_objects("test_data/candidates.csv", Candidate)
+class TestInstantiation:
+    def test_instantiate_candidate(self):
+        c_data_row = [
+            "C-1",
+            "SC",
+            "1",
+            "",
+            "London",
+            "",
+            "false",
+            "false",
+            "true",
+            "false",
+            "false",
+            "",
+            "Policy,Digital,Finance,Operational",
+        ]
+        candidate = Candidate(*c_data_row)
+        assert candidate
