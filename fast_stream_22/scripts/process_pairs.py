@@ -1,10 +1,14 @@
 import click
-from click import echo
 from fast_stream_22.matching.match import Matching
 from fast_stream_22.matching.read_in import read_candidates, read_roles
 
 
 @click.command
-def process_matches():
+@click.option(
+    "--candidates", help="Path to candidates file", default="./candidates.csv", type=str
+)
+@click.option("--roles", help="Path to roles file", default="./roles.csv", type=str)
+def process_matches(roles: str, candidates: str):
     matches = Matching(read_candidates(), read_roles()).report_pairs()
-    echo(matches)
+    for pair in matches:
+        print(f"{pair[0]} paired with {pair[1]}")
