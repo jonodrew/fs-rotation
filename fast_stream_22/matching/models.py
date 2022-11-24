@@ -41,6 +41,8 @@ class Candidate(BaseClass):
         no_immigration: StrBool,
         preferred_office_attendance: str,
         skills_seeking: str,
+        british_national: StrBool,
+        has_passport: StrBool,
     ):
         super().__init__(uuid, clearance_held)
         self.can_relocate = json.loads(can_relocate.lower())
@@ -54,6 +56,8 @@ class Candidate(BaseClass):
         self.no_immigration = json.loads(no_immigration.lower())
         self.preferred_office_attendance = preferred_office_attendance
         self.skills_seeking: Sequence[str] = skills_seeking.split(",")
+        self.british_national = json.loads(british_national.lower())
+        self.has_passport = json.loads(has_passport.lower())
 
 
 class Role(BaseClass):
@@ -118,7 +122,7 @@ class Pair:
         if self.role.priority_role:
             self._score += self.scoring_weights["priority"]
 
-    def score_pair(self):
+    def score_pair(self) -> int:
         self._score_location()
         self._score_clearance()
         self._score_department()
@@ -126,6 +130,8 @@ class Pair:
         self._appropriate_for_year_group()
         self._skill_check()
         self._stretch_check()
+        self._score_nationality()
+        self._check_travel()
         return self._score
 
     def _score_location(self):
@@ -141,6 +147,16 @@ class Pair:
 
     def _score_clearance(self):
         self.disqualified = self.candidate.clearance < self.role.clearance
+
+    def _score_nationality(self):
+        self.disqualified = (
+            self.role.nationality_requirement and not self.candidate.british_national
+        )
+
+    def _check_travel(self):
+        self.disqualified = (
+            self.role.travel_requirements and not self.candidate.has_passport
+        )
 
     def _score_department(self):
         if self.role.department not in self.candidate.prior_departments:
