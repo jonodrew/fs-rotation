@@ -9,6 +9,6 @@ from fast_stream_22.matching.read_in import read_candidates, read_roles
 )
 @click.option("--roles", help="Path to roles file", default="./roles.csv", type=str)
 def process_matches(roles: str, candidates: str):
-    matches = Matching(read_candidates(), read_roles()).report_pairs()
+    matches = Matching(read_candidates(candidates), read_roles(roles)).report_pairs()
     for pair in matches:
         print(f"{pair[0]} paired with {pair[1]}")
