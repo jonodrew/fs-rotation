@@ -100,7 +100,7 @@ class Role(BaseClass):
 
 
 class Pair:
-    scoring_weights = {"location": (10, 5)}
+    scoring_weights = {"location": (10, 5), "department": 10}
 
     def __init__(self, c: Candidate, r: Role):
         self.candidate = c
@@ -111,6 +111,7 @@ class Pair:
     def score_pair(self):
         self._score_location()
         self._score_clearance()
+        self._score_department()
 
     def _score_location(self):
         first, second = self.scoring_weights["location"]
@@ -126,6 +127,10 @@ class Pair:
 
     def _score_clearance(self):
         self.disqualified = self.candidate.clearance >= self.role.clearance
+
+    def _score_department(self):
+        if self.role.department not in self.candidate.prior_departments:
+            self.score += self.scoring_weights["department"]
 
     @property
     def disqualified(self):
