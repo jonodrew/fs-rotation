@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import IntEnum
 from typing import Literal, Sequence
 
 SkillLevel = Literal[0, 1, 2, 3, 4, 5]
@@ -7,7 +7,7 @@ Skills = dict[str, SkillLevel]
 StrBool = Literal["true", "false"]
 
 
-class Clearance(Enum):
+class Clearance(IntEnum):
     BPSS = 1
     CTC = 2
     SC = 3
@@ -109,7 +109,7 @@ class Pair:
         self._disqualified = False
 
     def score_pair(self):
-        pass
+        self._score_location()
 
     def _score_location(self):
         first, second = self.scoring_weights["location"]
@@ -122,6 +122,9 @@ class Pair:
             self.score += first
         elif self.role.location == self.candidate.second_preference_location:
             self.score += second
+
+    def _score_clearance(self):
+        return self.candidate.clearance >= self.role.clearance
 
     @property
     def disqualified(self):
