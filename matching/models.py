@@ -59,27 +59,51 @@ class Role(BaseClass):
     def __init__(
         self,
         name: str,
-        clearance_required: Clearance,
+        clearance_required: str,
+        nationality_requirement: StrBool,
+        passport_requirement: StrBool,
         location: str,
-        skill_increase: Skills,
-        owner_email_address: str,
+        department: str,
+        priority_role: StrBool,
+        suitable_for_year_group: str,
+        private_office_role: StrBool,
+        line_management_role: StrBool,
+        office_arrangement: str,
+        travel_requirements: str,
+        defence_role: StrBool,
+        immigration_role: StrBool,
+        skill_focus: str,
     ):
         super().__init__(
-            name, clearance_required, location, skill_increase, owner_email_address
+            name,
+            clearance_required,
         )
-
-    @property
-    def location(self) -> str:
-        return self._location
+        self.nationality_requirement = bool(nationality_requirement)
+        self.passport_requirement = bool(passport_requirement)
+        self.location = location
+        self.department = department
+        self.priority_role = bool(priority_role)
+        self.suitable_years_groups = {
+            int(year) for year in suitable_for_year_group.split(",")
+        }
+        self.private_office_role = bool(private_office_role)
+        self.line_management_role = bool(line_management_role)
+        self.office_arrangements = office_arrangement
+        self.travel_requirements = travel_requirements
+        self.defence_role = bool(defence_role)
+        self.immigration_role = bool(immigration_role)
+        self.skill_focus = skill_focus
 
     @property
     def clearance_required(self) -> Clearance:
-        return self._clearance
+        return self.clearance
 
-    @property
-    def skill_growth(self) -> Skills:
-        return self._skills
 
-    @property
-    def role_owner_email(self):
-        return self._email
+class Pair:
+    def __init__(self, c: Candidate, r: Role):
+        self.candidate = c
+        self.role = r
+        self.score: int = 0
+
+    def score_pair(self):
+        pass
