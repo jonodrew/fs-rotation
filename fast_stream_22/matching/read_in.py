@@ -8,13 +8,13 @@ from fast_stream_22.matching.models import Candidate, Role, BaseClass
 
 
 @functools.lru_cache
-def read_candidates() -> Sequence[Candidate]:
-    return _read_and_create_objects("candidates.csv", Candidate)
+def read_candidates(path_to_csv: str = "./candidates.csv") -> Sequence[Candidate]:
+    return _read_and_create_objects(path_to_csv, Candidate)
 
 
 @functools.lru_cache
-def read_roles() -> Sequence[Role]:
-    return _read_and_create_objects("roles.csv", Role)
+def read_roles(path_to_csv: str = "./roles.csv") -> Sequence[Role]:
+    return _read_and_create_objects(path_to_csv, Role)
 
 
 MatchObject = TypeVar("MatchObject", bound=BaseClass)

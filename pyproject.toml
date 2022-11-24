@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "fast-stream-22"
-version = "0.3.1"
+version = "0.4.1"
 description = ""
 authors = ["jonathan.kerr <jonathan.kerr@digital.cabinet-office.gov.uk>"]
 readme = "README.md"
@@ -26,4 +26,4 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
-pairing_script = ".scripts.process_pairs:process_matches"
+pairing_script = "fast_stream_22.scripts.process_pairs:process_matches"
