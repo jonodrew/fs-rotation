@@ -112,6 +112,7 @@ class Pair:
         self._score_location()
         self._score_clearance()
         self._score_department()
+        self._ethical_check()
 
     def _score_location(self):
         first, second = self.scoring_weights["location"]
@@ -131,6 +132,11 @@ class Pair:
     def _score_department(self):
         if self.role.department not in self.candidate.prior_departments:
             self.score += self.scoring_weights["department"]
+
+    def _ethical_check(self):
+        self.disqualified = (
+            self.candidate.no_immigration and self.role.immigration_role
+        ) or (self.candidate.no_defence and self.role.defence_role)
 
     @property
     def disqualified(self):
