@@ -184,5 +184,4 @@ class Pair:
 
     @property
     def score(self):
-        self.score_pair()
         return self._score

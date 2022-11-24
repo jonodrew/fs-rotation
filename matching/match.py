@@ -15,6 +15,7 @@ class Matching:
 
     @staticmethod
     def _score_or_disqualify(p: Pair) -> Union[DISALLOWED, int]:
+        p.score_pair()
         if p.disqualified:
             return DISALLOWED
         else:
