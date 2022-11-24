@@ -24,3 +24,6 @@ bumpversion = "^0.6.0"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+pairing_script = ".scripts.process_pairs:process_matches"

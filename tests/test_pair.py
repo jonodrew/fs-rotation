@@ -2,7 +2,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from matching.models import Pair, Candidate, Role
+from fast_stream_22.matching.models import Pair, Candidate, Role
 
 
 @pytest.fixture

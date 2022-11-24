@@ -1,5 +1,5 @@
-from matching.match import Matching
-from matching.models import Candidate, Role
+from fast_stream_22.matching.match import Matching
+from fast_stream_22.matching.models import Candidate, Role
 
 
 class TestMatchClass:

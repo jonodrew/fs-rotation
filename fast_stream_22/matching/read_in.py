@@ -4,7 +4,7 @@ import csv
 import functools
 from typing import Sequence, Type, TypeVar
 
-from matching.models import Candidate, Role, BaseClass
+from fast_stream_22.matching.models import Candidate, Role, BaseClass
 
 
 @functools.lru_cache

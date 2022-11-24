@@ -1,4 +1,4 @@
-from matching.models import Candidate
+from fast_stream_22.matching.models import Candidate
 
 
 class TestInstantiation:

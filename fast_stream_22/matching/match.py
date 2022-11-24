@@ -4,7 +4,7 @@ import sys
 from typing import Sequence, Union
 from munkres import DISALLOWED, make_cost_matrix, Munkres
 
-from matching.models import Candidate, Role, Pair
+from fast_stream_22.matching.models import Candidate, Role, Pair
 import numpy as np
 
 

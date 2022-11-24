@@ -3,7 +3,7 @@ import uuid
 
 import pytest
 
-from matching.models import Role, Candidate
+from fast_stream_22.matching.models import Role, Candidate
 
 
 @pytest.fixture
