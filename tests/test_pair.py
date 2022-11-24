@@ -8,7 +8,7 @@ from matching.models import Pair, Candidate, Role
 @pytest.fixture
 def pair_with_mocks():
     role = MagicMock(Role)
-    role.priority_role = True
+    role.priority_role = False
     return Pair(MagicMock(spec=Candidate, create=True), role)
 
 
@@ -20,3 +20,4 @@ class TestPair:
         pair.role.location = "Toontown"
         pair._score_location()
         assert not pair.disqualified
+        assert pair._score == pair.scoring_weights["first_location"]
