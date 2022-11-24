@@ -3,12 +3,12 @@ import uuid
 
 import pytest
 
-from matching.models import Role
+from matching.models import Role, Candidate
 
 
 @pytest.fixture
-def candidate_data(random_candidate):
-    return [random_candidate() for i in range(50)]
+def random_candidates(random_candidate_dict):
+    return [Candidate(**random_candidate_dict()) for i in range(50)]
 
 
 @pytest.fixture
@@ -69,8 +69,8 @@ def random_role_dict():
 
 
 @pytest.fixture
-def random_roles(random_role):
-    return [Role(**random_role()) for i in range(75)]
+def random_roles(random_role_dict):
+    return [Role(**random_role_dict()) for i in range(75)]
 
 
 departments = ["DWP", "HO", "MOJ", "MOD", "HMRC", "CO", "BEIS"]

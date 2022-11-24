@@ -8,3 +8,7 @@ class TestMatchClass:
         r = Role(**random_role_dict())
         m = Matching([c], [r])
         assert m
+
+    def test_large_instantiation(self, random_candidates, random_roles):
+        m = Matching(random_candidates, random_roles)
+        assert m
