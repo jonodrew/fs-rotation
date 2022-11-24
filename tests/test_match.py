@@ -12,3 +12,8 @@ class TestMatchClass:
     def test_large_instantiation(self, random_candidates, random_roles):
         m = Matching(random_candidates, random_roles)
         assert m
+
+    def test_match_process_works(self, random_candidates, random_roles):
+        m = Matching(random_candidates, random_roles)
+        pairs = m.match()
+        assert pairs
