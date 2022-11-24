@@ -100,7 +100,7 @@ class Role(BaseClass):
 
 
 class Pair:
-    scoring_weights = {"location": (10, 5), "department": 10}
+    scoring_weights = {"location": (10, 5), "department": 10, "skill": 20}
 
     def __init__(self, c: Candidate, r: Role):
         self.candidate = c
@@ -114,6 +114,7 @@ class Pair:
         self._score_department()
         self._ethical_check()
         self._appropriate_for_year_group()
+        self._skill_check()
 
     def _score_location(self):
         first, second = self.scoring_weights["location"]
@@ -143,6 +144,10 @@ class Pair:
         self.disqualified = (
             self.candidate.year_group not in self.role.suitable_year_groups
         )
+
+    def _skill_check(self):
+        if self.role.skill_focus in self.candidate.skills_sought:
+            self.score += self.scoring_weights["skill"]
 
     @property
     def disqualified(self):
