@@ -100,11 +100,13 @@ class Role(BaseClass):
 
 
 class Pair:
-    scoring_weights = {
-        "location": (10, 5),
+    scoring_weights: dict[str, int] = {
+        "first_location": 10,
+        "second_location": 5,
         "department": 10,
         "skill": 20,
         "stretch": 10,
+        "priority": 10,
     }
 
     def __init__(self, c: Candidate, r: Role):
@@ -112,6 +114,8 @@ class Pair:
         self.role = r
         self.score: int = 0
         self._disqualified = False
+        if self.role.priority_role:
+            self.score += self.scoring_weights["priority"]
 
     def score_pair(self):
         self._score_location()
@@ -123,16 +127,15 @@ class Pair:
         self._stretch_check()
 
     def _score_location(self):
-        first, second = self.scoring_weights["location"]
         if (
             self.role.location != self.candidate.first_preference_location
             and not self.candidate.can_relocate
         ):
             self.disqualified = True
         elif self.role.location == self.candidate.first_preference_location:
-            self.score += first
+            self.score += self.scoring_weights["first_location"]
         elif self.role.location == self.candidate.second_preference_location:
-            self.score += second
+            self.score += self.scoring_weights["second_location"]
 
     def _score_clearance(self):
         self.disqualified = self.candidate.clearance >= self.role.clearance
