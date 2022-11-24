@@ -138,7 +138,7 @@ class Pair:
             self._score += self.scoring_weights["second_location"]
 
     def _score_clearance(self):
-        self.disqualified = self.candidate.clearance >= self.role.clearance
+        self.disqualified = self.candidate.clearance < self.role.clearance
 
     def _score_department(self):
         if self.role.department not in self.candidate.prior_departments:
