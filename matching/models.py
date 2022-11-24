@@ -116,6 +116,7 @@ class Pair:
         self._disqualified = False
         if self.role.priority_role:
             self.score += self.scoring_weights["priority"]
+        self.score_pair()
 
     def score_pair(self):
         self._score_location()
@@ -155,7 +156,7 @@ class Pair:
         )
 
     def _skill_check(self):
-        if self.role.skill_focus in self.candidate.skills_sought:
+        if self.role.skill_focus in self.candidate.skills_seeking:
             self.score += self.scoring_weights["skill"]
 
     def _stretch_check(self):

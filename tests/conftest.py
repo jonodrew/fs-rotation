@@ -18,13 +18,13 @@ def random_candidate_dict():
             "uuid": f"C-{uuid.uuid4()}",
             "clearance_held": random.choice(["SC", "DV"]),
             "year_group": random.choice([i for i in range(1, 5)]),
-            "can_relocate": bool(random.getrandbits(1)),
+            "can_relocate": True,
             "first_location_preference": random.choice(locations),
             "second_location_preference": random.choice([*locations, None]),
-            "wants_line_management": bool(random.getrandbits(1)),
-            "wants_private_office": bool(random.getrandbits(1)),
-            "no_defence": bool(random.getrandbits(1)),
-            "no_immigration": bool(random.getrandbits(1)),
+            "wants_line_management": True,
+            "wants_private_office": True,
+            "no_defence": False,
+            "no_immigration": False,
             "preferred_office_attendance": "",
         }
         candidate["prior_departments"] = ",".join(
@@ -44,7 +44,7 @@ def random_role_dict():
     def _random_role():
         role = {
             "uuid": f"R-{uuid.uuid4()}",
-            "clearance_required": random.choice(["DV", "SC"]),
+            "clearance_required": "SC",
             "nationality_requirement": bool(random.getrandbits(1)),
             "passport_requirement": bool(random.getrandbits(1)),
             "location": random.choice(locations),
@@ -55,12 +55,12 @@ def random_role_dict():
                     str, random.sample([i for i in range(1, 5)], k=random.randint(1, 4))
                 )
             ),
-            "private_office_role": bool(random.getrandbits(1)),
-            "line_management_role": bool(random.getrandbits(1)),
+            "private_office_role": False,
+            "line_management_role": False,
             "office_arrangement": "",
             "travel_requirements": "",
-            "defence_role": bool(random.getrandbits(1)),
-            "immigration_role": bool(random.getrandbits(1)),
+            "defence_role": False,
+            "immigration_role": False,
             "skill_focus": random.choice(skills),
         }
         return {key: str(value) for key, value in role.items()}
