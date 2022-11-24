@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2022-11-24
+### Changed
+- `Matching.report_pairs` now only returns a list of paired IDs
+
 ## [0.2.1] - 2022-11-24
 ### Added
 - Enough code for a proof of concept

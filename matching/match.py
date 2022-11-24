@@ -25,16 +25,16 @@ class Matching:
         else:
             return p.score
 
-    def match(self):
+    def _match(self):
         matrix = make_cost_matrix(
             self.score_grid, lambda x: sys.maxsize - x if type(x) is int else x
         )
         return Munkres().compute(matrix)
 
-    def report_pairs(self) -> list[tuple[Candidate, Role]]:
-        pairs = self.match()
+    def report_pairs(self) -> list[tuple[str, str]]:
+        pairs = self._match()
         return [self._convert_pair(p) for p in pairs]
 
-    def _convert_pair(self, pair: tuple[int, int]) -> tuple[Candidate, Role]:
+    def _convert_pair(self, pair: tuple[int, int]) -> tuple[str, str]:
         candidate, role = pair
-        return self.candidates[candidate], self.roles[role]
+        return self.candidates[candidate].uid, self.roles[role].uid
