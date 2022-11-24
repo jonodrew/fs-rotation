@@ -83,7 +83,7 @@ class Role(BaseClass):
         self.location = location
         self.department = department
         self.priority_role = bool(priority_role)
-        self.suitable_years_groups = {
+        self.suitable_year_groups = {
             int(year) for year in suitable_for_year_group.split(",")
         }
         self.private_office_role = bool(private_office_role)
@@ -113,6 +113,7 @@ class Pair:
         self._score_clearance()
         self._score_department()
         self._ethical_check()
+        self._appropriate_for_year_group()
 
     def _score_location(self):
         first, second = self.scoring_weights["location"]
@@ -137,6 +138,11 @@ class Pair:
         self.disqualified = (
             self.candidate.no_immigration and self.role.immigration_role
         ) or (self.candidate.no_defence and self.role.defence_role)
+
+    def _appropriate_for_year_group(self):
+        self.disqualified = (
+            self.candidate.year_group not in self.role.suitable_year_groups
+        )
 
     @property
     def disqualified(self):
