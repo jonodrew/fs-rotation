@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import sys
 from typing import Sequence, Union
 from munkres import DISALLOWED, make_cost_matrix, Munkres
 
@@ -23,5 +24,7 @@ class Matching:
             return p.score
 
     def match(self):
-        matrix = make_cost_matrix(self.score_grid)
+        matrix = make_cost_matrix(
+            self.score_grid, lambda x: sys.maxsize - x if type(x) is int else x
+        )
         return Munkres().compute(matrix)
