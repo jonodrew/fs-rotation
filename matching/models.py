@@ -100,7 +100,12 @@ class Role(BaseClass):
 
 
 class Pair:
-    scoring_weights = {"location": (10, 5), "department": 10, "skill": 20}
+    scoring_weights = {
+        "location": (10, 5),
+        "department": 10,
+        "skill": 20,
+        "stretch": 10,
+    }
 
     def __init__(self, c: Candidate, r: Role):
         self.candidate = c
@@ -115,6 +120,7 @@ class Pair:
         self._ethical_check()
         self._appropriate_for_year_group()
         self._skill_check()
+        self._stretch_check()
 
     def _score_location(self):
         first, second = self.scoring_weights["location"]
@@ -148,6 +154,19 @@ class Pair:
     def _skill_check(self):
         if self.role.skill_focus in self.candidate.skills_sought:
             self.score += self.scoring_weights["skill"]
+
+    def _stretch_check(self):
+        if (
+            not self.candidate.wants_private_office and self.role.private_office_role
+        ) or (
+            not self.candidate.wants_line_management and self.role.line_management_role
+        ):
+            self.disqualified = True
+        else:
+            if self.candidate.wants_private_office and self.role.private_office_role:
+                self.score += self.scoring_weights["stretch"]
+            if self.candidate.wants_line_management and self.role.line_management_role:
+                self.score += self.scoring_weights["stretch"]
 
     @property
     def disqualified(self):
