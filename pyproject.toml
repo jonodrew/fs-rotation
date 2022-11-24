@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "fast-stream-22"
-version = "0.4.1"
+version = "0.5.0"
 description = ""
 authors = ["jonathan.kerr <jonathan.kerr@digital.cabinet-office.gov.uk>"]
 readme = "README.md"
