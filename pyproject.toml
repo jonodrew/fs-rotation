@@ -26,4 +26,4 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
-pairing_script = ".scripts.process_pairs:process_matches"
+pairing_script = "fast_stream_22.scripts.process_pairs:process_matches"
