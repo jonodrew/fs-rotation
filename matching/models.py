@@ -100,10 +100,36 @@ class Role(BaseClass):
 
 
 class Pair:
+    scoring_weights = {"location": (10, 5)}
+
     def __init__(self, c: Candidate, r: Role):
         self.candidate = c
         self.role = r
         self.score: int = 0
+        self._disqualified = False
 
     def score_pair(self):
         pass
+
+    def _score_location(self):
+        first, second = self.scoring_weights["location"]
+        if (
+            self.role.location != self.candidate.first_preference_location
+            and not self.candidate.can_relocate
+        ):
+            self.disqualified = True
+        elif self.role.location == self.candidate.first_preference_location:
+            self.score += first
+        elif self.role.location == self.candidate.second_preference_location:
+            self.score += second
+
+    @property
+    def disqualified(self):
+        return self._disqualified
+
+    @disqualified.setter
+    def disqualified(self, value: bool):
+        if self._disqualified or value:
+            self._disqualified = True
+        else:
+            self._disqualified = False
