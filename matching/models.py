@@ -110,6 +110,7 @@ class Pair:
 
     def score_pair(self):
         self._score_location()
+        self._score_clearance()
 
     def _score_location(self):
         first, second = self.scoring_weights["location"]
@@ -124,7 +125,7 @@ class Pair:
             self.score += second
 
     def _score_clearance(self):
-        return self.candidate.clearance >= self.role.clearance
+        self.disqualified = self.candidate.clearance >= self.role.clearance
 
     @property
     def disqualified(self):
