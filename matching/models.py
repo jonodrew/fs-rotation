@@ -27,7 +27,7 @@ class BaseClass:
 class Candidate(BaseClass):
     def __init__(
         self,
-        id_string: str,
+        uuid: str,
         clearance_held: str,
         year_group: str,
         prior_departments: str,
@@ -39,9 +39,9 @@ class Candidate(BaseClass):
         no_defence: StrBool,
         no_immigration: StrBool,
         preferred_office_attendance: str,
-        skills_sought: str,
+        skills_seeking: str,
     ):
-        super().__init__(id_string, clearance_held)
+        super().__init__(uuid, clearance_held)
         self.can_relocate = bool(can_relocate)
         self.first_preference_location = first_location_preference
         self.second_preference_location = second_location_preference
@@ -52,13 +52,13 @@ class Candidate(BaseClass):
         self.no_defence = bool(no_defence)
         self.no_immigration = bool(no_immigration)
         self.preferred_office_attendance = preferred_office_attendance
-        self.skills_sought: Sequence[str] = skills_sought.split(",")
+        self.skills_seeking: Sequence[str] = skills_seeking.split(",")
 
 
 class Role(BaseClass):
     def __init__(
         self,
-        name: str,
+        uuid: str,
         clearance_required: str,
         nationality_requirement: StrBool,
         passport_requirement: StrBool,
@@ -75,7 +75,7 @@ class Role(BaseClass):
         skill_focus: str,
     ):
         super().__init__(
-            name,
+            uuid,
             clearance_required,
         )
         self.nationality_requirement = bool(nationality_requirement)
