@@ -112,11 +112,10 @@ class Pair:
     def __init__(self, c: Candidate, r: Role):
         self.candidate = c
         self.role = r
-        self.score: int = 0
+        self._score: int = 0
         self._disqualified = False
         if self.role.priority_role:
-            self.score += self.scoring_weights["priority"]
-        self.score_pair()
+            self._score += self.scoring_weights["priority"]
 
     def score_pair(self):
         self._score_location()
@@ -134,16 +133,16 @@ class Pair:
         ):
             self.disqualified = True
         elif self.role.location == self.candidate.first_preference_location:
-            self.score += self.scoring_weights["first_location"]
+            self._score += self.scoring_weights["first_location"]
         elif self.role.location == self.candidate.second_preference_location:
-            self.score += self.scoring_weights["second_location"]
+            self._score += self.scoring_weights["second_location"]
 
     def _score_clearance(self):
         self.disqualified = self.candidate.clearance >= self.role.clearance
 
     def _score_department(self):
         if self.role.department not in self.candidate.prior_departments:
-            self.score += self.scoring_weights["department"]
+            self._score += self.scoring_weights["department"]
 
     def _ethical_check(self):
         self.disqualified = (
@@ -157,7 +156,7 @@ class Pair:
 
     def _skill_check(self):
         if self.role.skill_focus in self.candidate.skills_seeking:
-            self.score += self.scoring_weights["skill"]
+            self._score += self.scoring_weights["skill"]
 
     def _stretch_check(self):
         if (
@@ -168,9 +167,9 @@ class Pair:
             self.disqualified = True
         else:
             if self.candidate.wants_private_office and self.role.private_office_role:
-                self.score += self.scoring_weights["stretch"]
+                self._score += self.scoring_weights["stretch"]
             if self.candidate.wants_line_management and self.role.line_management_role:
-                self.score += self.scoring_weights["stretch"]
+                self._score += self.scoring_weights["stretch"]
 
     @property
     def disqualified(self):
@@ -182,3 +181,8 @@ class Pair:
             self._disqualified = True
         else:
             self._disqualified = False
+
+    @property
+    def score(self):
+        self.score_pair()
+        return self._score
