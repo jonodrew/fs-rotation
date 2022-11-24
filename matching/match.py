@@ -9,9 +9,10 @@ import numpy as np
 
 class Matching:
     def __init__(self, candidates: Sequence[Candidate], roles: Sequence[Role]):
-        self.pairs = [Pair(c, r) for c in candidates for r in roles]
-        self.grid = np.reshape(self.pairs, (len(candidates), len(roles)))
-        self.score_grid = self.generate_score_grid()
+        self.pairs = [
+            self._score_or_disqualify(Pair(c, r)) for c in candidates for r in roles
+        ]
+        self.score_grid = np.reshape(self.pairs, (len(candidates), len(roles)))
 
     @staticmethod
     def _score_or_disqualify(p: Pair) -> Union[DISALLOWED, int]:
@@ -20,10 +21,6 @@ class Matching:
             return DISALLOWED
         else:
             return p.score
-
-    def generate_score_grid(self):
-        v_func = np.vectorize(self._score_or_disqualify)
-        return v_func(self.grid)
 
     def match(self):
         matrix = make_cost_matrix(self.score_grid)

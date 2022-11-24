@@ -1,5 +1,6 @@
 from enum import IntEnum
 from typing import Literal, Sequence
+import json
 
 SkillLevel = Literal[0, 1, 2, 3, 4, 5]
 Skills = dict[str, SkillLevel]
@@ -42,15 +43,15 @@ class Candidate(BaseClass):
         skills_seeking: str,
     ):
         super().__init__(uuid, clearance_held)
-        self.can_relocate = bool(can_relocate)
+        self.can_relocate = json.loads(can_relocate.lower())
         self.first_preference_location = first_location_preference
         self.second_preference_location = second_location_preference
         self.year_group = int(year_group)
         self.prior_departments = set(prior_departments.split(","))
-        self.wants_line_management = bool(wants_line_management)
-        self.wants_private_office = bool(wants_private_office)
-        self.no_defence = bool(no_defence)
-        self.no_immigration = bool(no_immigration)
+        self.wants_line_management = json.loads(wants_line_management.lower())
+        self.wants_private_office = json.loads(wants_private_office.lower())
+        self.no_defence = json.loads(no_defence.lower())
+        self.no_immigration = json.loads(no_immigration.lower())
         self.preferred_office_attendance = preferred_office_attendance
         self.skills_seeking: Sequence[str] = skills_seeking.split(",")
 
@@ -78,20 +79,20 @@ class Role(BaseClass):
             uuid,
             clearance_required,
         )
-        self.nationality_requirement = bool(nationality_requirement)
-        self.passport_requirement = bool(passport_requirement)
+        self.nationality_requirement = json.loads(nationality_requirement.lower())
+        self.passport_requirement = json.loads(passport_requirement.lower())
         self.location = location
         self.department = department
-        self.priority_role = bool(priority_role)
+        self.priority_role = json.loads(priority_role.lower())
         self.suitable_year_groups = {
             int(year) for year in suitable_for_year_group.split(",")
         }
-        self.private_office_role = bool(private_office_role)
-        self.line_management_role = bool(line_management_role)
+        self.private_office_role = json.loads(private_office_role.lower())
+        self.line_management_role = json.loads(line_management_role.lower())
         self.office_arrangements = office_arrangement
         self.travel_requirements = travel_requirements
-        self.defence_role = bool(defence_role)
-        self.immigration_role = bool(immigration_role)
+        self.defence_role = json.loads(defence_role.lower())
+        self.immigration_role = json.loads(immigration_role.lower())
         self.skill_focus = skill_focus
 
     @property
@@ -125,6 +126,7 @@ class Pair:
         self._appropriate_for_year_group()
         self._skill_check()
         self._stretch_check()
+        return self._score
 
     def _score_location(self):
         if (
