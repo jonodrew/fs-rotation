@@ -154,9 +154,15 @@ class Pair:
             and not self.candidate.can_relocate
         ):
             self.disqualified = True
-        elif self.role.location == self.candidate.first_preference_location:
+        elif (
+            self.role.location == self.candidate.first_preference_location
+            or self.candidate.first_preference_location == "Any"
+        ):
             self._score += self.scoring_weights["first_location"]
-        elif self.role.location == self.candidate.second_preference_location:
+        elif (
+            self.role.location == self.candidate.second_preference_location
+            or self.candidate.second_preference_location == "Any"
+        ):
             self._score += self.scoring_weights["second_location"]
 
     def _score_clearance(self):
