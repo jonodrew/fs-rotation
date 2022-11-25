@@ -8,6 +8,12 @@ Skills = dict[str, SkillLevel]
 StrBool = Literal["true", "false"]
 
 
+class Priority(IntEnum):
+    LOW = 0
+    MEDIUM = 1
+    HIGH = 2
+
+
 class Clearance(IntEnum):
     BPSS = 1
     CTC = 2
@@ -83,7 +89,7 @@ class Role(BaseClass):
         passport_requirement: StrBool,
         location: str,
         department: str,
-        priority_role: StrBool,
+        priority_role: str,
         suitable_for_year_group: str,
         private_office_role: StrBool,
         line_management_role: StrBool,
@@ -104,7 +110,7 @@ class Role(BaseClass):
         self.passport_requirement = json.loads(passport_requirement.lower())
         self.location = location
         self.department = department
-        self.priority_role = json.loads(priority_role.lower())
+        self.priority_role = Priority[priority_role.upper()]
         self.suitable_year_groups = {
             int(year) for year in suitable_for_year_group.split(",")
         }
@@ -129,7 +135,7 @@ class Pair:
         "department": 10,
         "skill": 20,
         "stretch": 10,
-        "priority": 10,
+        "priority": 5,
     }
 
     def __init__(self, c: Candidate, r: Role):
@@ -150,7 +156,11 @@ class Pair:
         self._stretch_check()
         self._check_nationality()
         self._check_travel()
+        self._score_priority()
         return self._score
+
+    def _score_priority(self):
+        self._score += self.scoring_weights["priority"] * self.role.priority_role.value
 
     def _score_location(self):
         if (

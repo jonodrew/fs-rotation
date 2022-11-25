@@ -50,7 +50,7 @@ def random_role_dict():
             "passport_requirement": bool(random.getrandbits(1)),
             "location": random.choice(locations),
             "department": random.choice(departments),
-            "priority_role": bool(random.getrandbits(1)),
+            "priority_role": random.choice(["High", "Medium", "Low"]),
             "suitable_for_year_group": ",".join(
                 map(
                     str, random.sample([i for i in range(1, 5)], k=random.randint(1, 4))
