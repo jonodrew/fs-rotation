@@ -194,7 +194,7 @@ class Pair:
 
     def _check_travel(self):
         self.disqualified = (
-            self.role.travel_requirements and not self.candidate.has_passport
+            self.role.passport_requirement and not self.candidate.has_passport
         )
 
     def _score_department(self):
