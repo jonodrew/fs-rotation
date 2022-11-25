@@ -1,5 +1,5 @@
 from enum import IntEnum
-from typing import Literal, Sequence
+from typing import Literal
 import json
 
 SkillLevel = Literal[0, 1, 2, 3, 4, 5]
@@ -52,7 +52,8 @@ class Candidate(BaseClass):
         no_defence: StrBool,
         no_immigration: StrBool,
         preferred_office_attendance: str,
-        skills_seeking: str,
+        primary_skills_seeking: str,
+        secondary_skills_seeking: str,
         british_national: str,
         has_passport: StrBool,
     ):
@@ -67,7 +68,8 @@ class Candidate(BaseClass):
         self.no_defence = json.loads(no_defence.lower())
         self.no_immigration = json.loads(no_immigration.lower())
         self.preferred_office_attendance = preferred_office_attendance
-        self.skills_seeking: Sequence[str] = skills_seeking.split(",")
+        self.primary_skill = primary_skills_seeking
+        self.secondary_skill = secondary_skills_seeking
         self.british_national = Nationality[british_national.replace(" ", "_").upper()]
         self.has_passport = json.loads(has_passport.lower())
 
@@ -90,6 +92,7 @@ class Role(BaseClass):
         defence_role: StrBool,
         immigration_role: StrBool,
         skill_focus: str,
+        secondary_focus: str,
     ):
         super().__init__(
             uuid,
@@ -112,6 +115,7 @@ class Role(BaseClass):
         self.defence_role = json.loads(defence_role.lower())
         self.immigration_role = json.loads(immigration_role.lower())
         self.skill_focus = skill_focus
+        self.secondary_focus = secondary_focus
 
     @property
     def clearance_required(self) -> Clearance:
@@ -142,7 +146,7 @@ class Pair:
         self._score_department()
         self._ethical_check()
         self._appropriate_for_year_group()
-        self._skill_check()
+        self._score_skill()
         self._stretch_check()
         self._check_nationality()
         self._check_travel()
@@ -197,9 +201,13 @@ class Pair:
             self.candidate.year_group not in self.role.suitable_year_groups
         )
 
-    def _skill_check(self):
-        if self.role.skill_focus in self.candidate.skills_seeking:
-            self._score += self.scoring_weights["skill"]
+    def _score_skill(self):
+        bonus = self.scoring_weights["skill"]
+        for skill in (self.candidate.primary_skill, self.candidate.secondary_skill):
+            for focus in (self.role.skill_focus, self.role.secondary_focus):
+                if skill == focus:
+                    self._score += bonus
+                bonus -= 5
 
     def _stretch_check(self):
         if (

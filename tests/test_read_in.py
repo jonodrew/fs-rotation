@@ -16,7 +16,8 @@ class TestInstantiation:
             "false",
             "false",
             "",
-            "Policy,Digital,Finance,Operational",
+            "Policy",
+            "Digital",
             "British National",
             "true",
         ]

@@ -26,14 +26,13 @@ def random_candidate_dict():
             "no_defence": False,
             "no_immigration": False,
             "preferred_office_attendance": "",
+            "primary_skills_seeking": "Operational",
+            "secondary_skills_seeking": "Digital",
             "british_national": "British National",
             "has_passport": True,
         }
         candidate["prior_departments"] = ",".join(
             random.sample(departments, k=candidate["year_group"] - 1)
-        )
-        candidate["skills_seeking"] = ",".join(
-            random.sample(skills, k=4 - (candidate["year_group"] - 1))
         )
         c = {key: str(value) for key, value in candidate.items()}
         return c
@@ -64,6 +63,7 @@ def random_role_dict():
             "defence_role": False,
             "immigration_role": False,
             "skill_focus": random.choice(skills),
+            "secondary_focus": random.choice(skills),
         }
         return {key: str(value) for key, value in role.items()}
 
