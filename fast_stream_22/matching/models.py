@@ -155,7 +155,7 @@ class Pair:
         self._score_skill()
         self._stretch_check()
         self._check_nationality()
-        self._check_travel()
+        self._check_passport()
         self._score_priority()
         return self._score
 
@@ -192,7 +192,7 @@ class Pair:
             self.role.nationality_requirement > self.candidate.british_national
         )
 
-    def _check_travel(self):
+    def _check_passport(self):
         self.disqualified = (
             self.role.passport_requirement and not self.candidate.has_passport
         )
