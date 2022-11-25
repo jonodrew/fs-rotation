@@ -23,7 +23,7 @@ class TestPair:
         pair = pair_with_mocks
         pair.candidate.can_relocate = True
         pair.candidate.first_preference_location = "Toontown"
-        pair.role.location = "Toontown"
+        pair.role.locations = "Toontown"
         pair._score_location()
         assert not pair.disqualified
         assert pair._score == pair.scoring_weights["first_location"]
@@ -33,7 +33,7 @@ class TestPair:
         pair.candidate.can_relocate = True
         pair.candidate.first_preference_location = "Any"
         pair.candidate.second_preference_location = "Any"
-        pair.role.location = "Toontown"
+        pair.role.locations = "Toontown"
         pair._score_location()
         assert pair._score == pair.scoring_weights["first_location"]
 

@@ -108,7 +108,7 @@ class Role(BaseClass):
             nationality_requirement.replace(" ", "_").upper()
         ]
         self.passport_requirement = json.loads(passport_requirement.lower())
-        self.location = location
+        self.locations = location.split(",")
         self.department = department
         self.priority_role = Priority[priority_role.upper()]
         self.suitable_year_groups = {
@@ -164,17 +164,17 @@ class Pair:
 
     def _score_location(self):
         if (
-            self.role.location != self.candidate.first_preference_location
+            self.candidate.first_preference_location not in self.role.locations
             and not self.candidate.can_relocate
         ):
             self.disqualified = True
         elif (
-            self.role.location == self.candidate.first_preference_location
+            self.role.locations == self.candidate.first_preference_location
             or self.candidate.first_preference_location == "Any"
         ):
             self._score += self.scoring_weights["first_location"]
         elif (
-            self.role.location == self.candidate.second_preference_location
+            self.role.locations == self.candidate.second_preference_location
             or self.candidate.second_preference_location == "Any"
         ):
             self._score += self.scoring_weights["second_location"]
