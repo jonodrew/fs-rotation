@@ -163,9 +163,9 @@ class Pair:
         self._score += self.scoring_weights["priority"] * self.role.priority_role.value
 
     def _score_location(self):
-        if (
+        if not self.candidate.can_relocate and (
             self.candidate.first_preference_location not in self.role.locations
-            and not self.candidate.can_relocate
+            and self.candidate.second_preference_location not in self.role.locations
         ):
             self.disqualified = True
         elif (
