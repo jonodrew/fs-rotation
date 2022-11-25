@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2022-11-24
+### Added
+- two new fields added to the Candidate input. These reflect nationality and passport requirements
+
 ## [0.4.0] - 2022-11-24
 ### Added
 - a new script has been added. This brings the software closer to version 1.0.0. Although it requires a developer to

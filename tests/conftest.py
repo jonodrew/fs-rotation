@@ -26,6 +26,8 @@ def random_candidate_dict():
             "no_defence": False,
             "no_immigration": False,
             "preferred_office_attendance": "",
+            "british_national": True,
+            "has_passport": True,
         }
         candidate["prior_departments"] = ",".join(
             random.sample(departments, k=candidate["year_group"] - 1)

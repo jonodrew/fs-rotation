@@ -17,6 +17,8 @@ class TestInstantiation:
             "false",
             "",
             "Policy,Digital,Finance,Operational",
+            "true",
+            "true",
         ]
         candidate = Candidate(*c_data_row)
         assert candidate
