@@ -17,7 +17,7 @@ class TestInstantiation:
             "false",
             "",
             "Policy,Digital,Finance,Operational",
-            "true",
+            "British National",
             "true",
         ]
         candidate = Candidate(*c_data_row)

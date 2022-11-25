@@ -15,6 +15,18 @@ class Clearance(IntEnum):
     DV = 4
 
 
+class Nationality(IntEnum):
+    REST_OF_WORLD = 1
+    DUAL_NATIONAL = 2
+    BRITISH_NATIONAL = 3
+
+
+class NationalityRequirement(IntEnum):
+    NO_RESTRICTION = 1
+    DUAL_NATIONAL = 2
+    BRITISH_NATIONAL = 3
+
+
 class BaseClass:
     def __init__(self, uid: str, clearance: str):
         self.uid = uid
@@ -41,7 +53,7 @@ class Candidate(BaseClass):
         no_immigration: StrBool,
         preferred_office_attendance: str,
         skills_seeking: str,
-        british_national: StrBool,
+        british_national: str,
         has_passport: StrBool,
     ):
         super().__init__(uuid, clearance_held)
@@ -56,7 +68,7 @@ class Candidate(BaseClass):
         self.no_immigration = json.loads(no_immigration.lower())
         self.preferred_office_attendance = preferred_office_attendance
         self.skills_seeking: Sequence[str] = skills_seeking.split(",")
-        self.british_national = json.loads(british_national.lower())
+        self.british_national = Nationality[british_national.replace(" ", "_").upper()]
         self.has_passport = json.loads(has_passport.lower())
 
 
@@ -65,7 +77,7 @@ class Role(BaseClass):
         self,
         uuid: str,
         clearance_required: str,
-        nationality_requirement: StrBool,
+        nationality_requirement: str,
         passport_requirement: StrBool,
         location: str,
         department: str,
@@ -83,7 +95,9 @@ class Role(BaseClass):
             uuid,
             clearance_required,
         )
-        self.nationality_requirement = json.loads(nationality_requirement.lower())
+        self.nationality_requirement = NationalityRequirement[
+            nationality_requirement.replace(" ", "_").upper()
+        ]
         self.passport_requirement = json.loads(passport_requirement.lower())
         self.location = location
         self.department = department
@@ -130,7 +144,7 @@ class Pair:
         self._appropriate_for_year_group()
         self._skill_check()
         self._stretch_check()
-        self._score_nationality()
+        self._check_nationality()
         self._check_travel()
         return self._score
 
@@ -148,9 +162,14 @@ class Pair:
     def _score_clearance(self):
         self.disqualified = self.candidate.clearance < self.role.clearance
 
-    def _score_nationality(self):
+    def _check_nationality(self):
+        """
+        Nationality requirements come in three flavours: British national only, dual national, no restriction
+
+        :return:
+        """
         self.disqualified = (
-            self.role.nationality_requirement and not self.candidate.british_national
+            self.role.nationality_requirement > self.candidate.british_national
         )
 
     def _check_travel(self):

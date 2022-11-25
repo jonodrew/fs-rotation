@@ -2,7 +2,13 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from fast_stream_22.matching.models import Pair, Candidate, Role
+from fast_stream_22.matching.models import (
+    Pair,
+    Candidate,
+    Role,
+    Nationality,
+    NationalityRequirement,
+)
 
 
 @pytest.fixture
@@ -21,3 +27,10 @@ class TestPair:
         pair._score_location()
         assert not pair.disqualified
         assert pair._score == pair.scoring_weights["first_location"]
+
+    def test_nationality_check(self, pair_with_mocks):
+        pair = pair_with_mocks
+        pair.candidate.british_national = Nationality["DUAL_NATIONAL"]
+        pair.role.nationality_requirement = NationalityRequirement["BRITISH_NATIONAL"]
+        pair._check_nationality()
+        assert pair.disqualified

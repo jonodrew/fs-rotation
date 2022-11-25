@@ -26,7 +26,7 @@ def random_candidate_dict():
             "no_defence": False,
             "no_immigration": False,
             "preferred_office_attendance": "",
-            "british_national": True,
+            "british_national": "British National",
             "has_passport": True,
         }
         candidate["prior_departments"] = ",".join(
@@ -47,7 +47,7 @@ def random_role_dict():
         role = {
             "uuid": f"R-{uuid.uuid4()}",
             "clearance_required": "SC",
-            "nationality_requirement": bool(random.getrandbits(1)),
+            "nationality_requirement": "British National",
             "passport_requirement": bool(random.getrandbits(1)),
             "location": random.choice(locations),
             "department": random.choice(departments),
