@@ -127,6 +127,9 @@ class Role(BaseClass):
     def clearance_required(self) -> Clearance:
         return self.clearance
 
+    def from_anywhere(self) -> bool:
+        return {"Available nationally", "Remote"}.union(self.locations) is not None
+
 
 class Pair:
     scoring_weights: dict[str, int] = {
@@ -163,18 +166,20 @@ class Pair:
         self._score += self.scoring_weights["priority"] * self.role.priority_role.value
 
     def _score_location(self):
-        if not self.candidate.can_relocate and (
+        if self.role.from_anywhere():
+            self._score += self.scoring_weights["first_location"]
+        elif not self.candidate.can_relocate and (
             self.candidate.first_preference_location not in self.role.locations
             and self.candidate.second_preference_location not in self.role.locations
         ):
             self.disqualified = True
         elif (
-            self.role.locations == self.candidate.first_preference_location
+            self.candidate.first_preference_location in self.role.locations
             or self.candidate.first_preference_location == "Any"
         ):
             self._score += self.scoring_weights["first_location"]
         elif (
-            self.role.locations == self.candidate.second_preference_location
+            self.candidate.second_preference_location in self.role.locations
             or self.candidate.second_preference_location == "Any"
         ):
             self._score += self.scoring_weights["second_location"]
