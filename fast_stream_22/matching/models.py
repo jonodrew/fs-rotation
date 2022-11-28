@@ -108,7 +108,7 @@ class Role(BaseClass):
             nationality_requirement.replace(" ", "_").upper()
         ]
         self.passport_requirement = json.loads(passport_requirement.lower())
-        self.locations = location.split(",")
+        self.locations = {loc.strip() for loc in location.split(",")}
         self.department = department
         self.priority_role = Priority[priority_role.upper()]
         self.suitable_year_groups = {
