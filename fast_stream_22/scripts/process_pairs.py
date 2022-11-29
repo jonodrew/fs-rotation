@@ -1,7 +1,6 @@
 import click
 from fast_stream_22.matching.match import Matching
 from fast_stream_22.matching.read_in import read_candidates, read_roles
-from munkres import print_matrix
 from numpy import savetxt
 
 
@@ -13,7 +12,6 @@ from numpy import savetxt
 def process_matches(roles: str, candidates: str):
     match = Matching(read_candidates(candidates), read_roles(roles))
     savetxt("grid.csv", match.score_grid, fmt="%s", delimiter=",")
-    print_matrix(match.score_grid)
     matches = match.report_pairs()
     for pair in matches:
         print(f"{pair[0]},{pair[1]}")
