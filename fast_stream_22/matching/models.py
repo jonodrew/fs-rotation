@@ -1,5 +1,5 @@
 from enum import IntEnum
-from typing import Literal, Sequence
+from typing import Literal
 import json
 
 SkillLevel = Literal[0, 1, 2, 3, 4, 5]
@@ -8,11 +8,29 @@ Skills = dict[str, SkillLevel]
 StrBool = Literal["true", "false"]
 
 
+class Priority(IntEnum):
+    LOW = 0
+    MEDIUM = 1
+    HIGH = 2
+
+
 class Clearance(IntEnum):
     BPSS = 1
     CTC = 2
     SC = 3
     DV = 4
+
+
+class Nationality(IntEnum):
+    REST_OF_WORLD = 1
+    DUAL_NATIONAL = 2
+    BRITISH_NATIONAL = 3
+
+
+class NationalityRequirement(IntEnum):
+    NO_RESTRICTION = 1
+    DUAL_NATIONAL = 2
+    BRITISH_NATIONAL = 3
 
 
 class BaseClass:
@@ -40,8 +58,9 @@ class Candidate(BaseClass):
         no_defence: StrBool,
         no_immigration: StrBool,
         preferred_office_attendance: str,
-        skills_seeking: str,
-        british_national: StrBool,
+        primary_skills_seeking: str,
+        secondary_skills_seeking: str,
+        british_national: str,
         has_passport: StrBool,
     ):
         super().__init__(uuid, clearance_held)
@@ -55,8 +74,9 @@ class Candidate(BaseClass):
         self.no_defence = json.loads(no_defence.lower())
         self.no_immigration = json.loads(no_immigration.lower())
         self.preferred_office_attendance = preferred_office_attendance
-        self.skills_seeking: Sequence[str] = skills_seeking.split(",")
-        self.british_national = json.loads(british_national.lower())
+        self.primary_skill = primary_skills_seeking
+        self.secondary_skill = secondary_skills_seeking
+        self.british_national = Nationality[british_national.replace(" ", "_").upper()]
         self.has_passport = json.loads(has_passport.lower())
 
 
@@ -65,11 +85,11 @@ class Role(BaseClass):
         self,
         uuid: str,
         clearance_required: str,
-        nationality_requirement: StrBool,
+        nationality_requirement: str,
         passport_requirement: StrBool,
         location: str,
         department: str,
-        priority_role: StrBool,
+        priority_role: str,
         suitable_for_year_group: str,
         private_office_role: StrBool,
         line_management_role: StrBool,
@@ -78,16 +98,19 @@ class Role(BaseClass):
         defence_role: StrBool,
         immigration_role: StrBool,
         skill_focus: str,
+        secondary_focus: str,
     ):
         super().__init__(
             uuid,
             clearance_required,
         )
-        self.nationality_requirement = json.loads(nationality_requirement.lower())
+        self.nationality_requirement = NationalityRequirement[
+            nationality_requirement.replace(" ", "_").upper()
+        ]
         self.passport_requirement = json.loads(passport_requirement.lower())
-        self.location = location
+        self.locations = {loc.strip() for loc in location.split(",")}
         self.department = department
-        self.priority_role = json.loads(priority_role.lower())
+        self.priority_role = Priority[priority_role.upper()]
         self.suitable_year_groups = {
             int(year) for year in suitable_for_year_group.split(",")
         }
@@ -98,10 +121,14 @@ class Role(BaseClass):
         self.defence_role = json.loads(defence_role.lower())
         self.immigration_role = json.loads(immigration_role.lower())
         self.skill_focus = skill_focus
+        self.secondary_focus = secondary_focus
 
     @property
     def clearance_required(self) -> Clearance:
         return self.clearance
+
+    def from_anywhere(self) -> bool:
+        return not {"Available Nationally", "Remote"}.isdisjoint(self.locations)
 
 
 class Pair:
@@ -111,7 +138,7 @@ class Pair:
         "department": 10,
         "skill": 20,
         "stretch": 10,
-        "priority": 10,
+        "priority": 5,
     }
 
     def __init__(self, c: Candidate, r: Role):
@@ -123,39 +150,60 @@ class Pair:
             self._score += self.scoring_weights["priority"]
 
     def score_pair(self) -> int:
+        self._check_location()
         self._score_location()
         self._score_clearance()
         self._score_department()
         self._ethical_check()
         self._appropriate_for_year_group()
-        self._skill_check()
+        self._score_skill()
         self._stretch_check()
-        self._score_nationality()
-        self._check_travel()
+        self._check_nationality()
+        self._check_passport()
+        self._score_priority()
         return self._score
 
+    def _score_priority(self):
+        self._score += self.scoring_weights["priority"] * self.role.priority_role.value
+
+    def _check_location(self):
+        if not self.candidate.can_relocate:
+            self._disqualified = not (
+                self.role.from_anywhere()
+                or self.candidate.first_preference_location in self.role.locations
+                or self.candidate.second_preference_location in self.role.locations
+            )
+
     def _score_location(self):
-        if (
-            self.role.location != self.candidate.first_preference_location
-            and not self.candidate.can_relocate
-        ):
-            self.disqualified = True
-        elif self.role.location == self.candidate.first_preference_location:
+        if self.role.from_anywhere():
             self._score += self.scoring_weights["first_location"]
-        elif self.role.location == self.candidate.second_preference_location:
+        elif (
+            self.candidate.first_preference_location in self.role.locations
+            or self.candidate.first_preference_location == "Any"
+        ):
+            self._score += self.scoring_weights["first_location"]
+        elif (
+            self.candidate.second_preference_location in self.role.locations
+            or self.candidate.second_preference_location == "Any"
+        ):
             self._score += self.scoring_weights["second_location"]
 
     def _score_clearance(self):
         self.disqualified = self.candidate.clearance < self.role.clearance
 
-    def _score_nationality(self):
+    def _check_nationality(self):
+        """
+        Nationality requirements come in three flavours: British national only, dual national, no restriction
+
+        :return:
+        """
         self.disqualified = (
-            self.role.nationality_requirement and not self.candidate.british_national
+            self.role.nationality_requirement > self.candidate.british_national
         )
 
-    def _check_travel(self):
+    def _check_passport(self):
         self.disqualified = (
-            self.role.travel_requirements and not self.candidate.has_passport
+            self.role.passport_requirement and not self.candidate.has_passport
         )
 
     def _score_department(self):
@@ -172,9 +220,13 @@ class Pair:
             self.candidate.year_group not in self.role.suitable_year_groups
         )
 
-    def _skill_check(self):
-        if self.role.skill_focus in self.candidate.skills_seeking:
-            self._score += self.scoring_weights["skill"]
+    def _score_skill(self):
+        bonus = self.scoring_weights["skill"]
+        for skill in (self.candidate.primary_skill, self.candidate.secondary_skill):
+            for focus in (self.role.skill_focus, self.role.secondary_focus):
+                if skill == focus:
+                    self._score += bonus
+                bonus -= 5
 
     def _stretch_check(self):
         if (

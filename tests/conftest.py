@@ -26,14 +26,13 @@ def random_candidate_dict():
             "no_defence": False,
             "no_immigration": False,
             "preferred_office_attendance": "",
-            "british_national": True,
+            "primary_skills_seeking": "Operational",
+            "secondary_skills_seeking": "Digital",
+            "british_national": "British National",
             "has_passport": True,
         }
         candidate["prior_departments"] = ",".join(
             random.sample(departments, k=candidate["year_group"] - 1)
-        )
-        candidate["skills_seeking"] = ",".join(
-            random.sample(skills, k=4 - (candidate["year_group"] - 1))
         )
         c = {key: str(value) for key, value in candidate.items()}
         return c
@@ -47,11 +46,11 @@ def random_role_dict():
         role = {
             "uuid": f"R-{uuid.uuid4()}",
             "clearance_required": "SC",
-            "nationality_requirement": bool(random.getrandbits(1)),
+            "nationality_requirement": "British National",
             "passport_requirement": bool(random.getrandbits(1)),
             "location": random.choice(locations),
             "department": random.choice(departments),
-            "priority_role": bool(random.getrandbits(1)),
+            "priority_role": random.choice(["High", "Medium", "Low"]),
             "suitable_for_year_group": ",".join(
                 map(
                     str, random.sample([i for i in range(1, 5)], k=random.randint(1, 4))
@@ -64,6 +63,7 @@ def random_role_dict():
             "defence_role": False,
             "immigration_role": False,
             "skill_focus": random.choice(skills),
+            "secondary_focus": random.choice(skills),
         }
         return {key: str(value) for key, value in role.items()}
 

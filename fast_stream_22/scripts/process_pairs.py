@@ -1,6 +1,7 @@
 import click
 from fast_stream_22.matching.match import Matching
 from fast_stream_22.matching.read_in import read_candidates, read_roles
+from numpy import savetxt
 
 
 @click.command
@@ -9,6 +10,8 @@ from fast_stream_22.matching.read_in import read_candidates, read_roles
 )
 @click.option("--roles", help="Path to roles file", default="./roles.csv", type=str)
 def process_matches(roles: str, candidates: str):
-    matches = Matching(read_candidates(candidates), read_roles(roles)).report_pairs()
+    match = Matching(read_candidates(candidates), read_roles(roles))
+    savetxt("grid.csv", match.score_grid, fmt="%s", delimiter=",")
+    matches = match.report_pairs()
     for pair in matches:
-        print(f"{pair[0]} paired with {pair[1]}")
+        print(f"{pair[0]},{pair[1]}")

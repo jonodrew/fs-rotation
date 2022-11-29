@@ -23,5 +23,9 @@ MatchObject = TypeVar("MatchObject", bound=BaseClass)
 def _read_and_create_objects(
     filepath: str, model: Type[MatchObject]
 ) -> list[MatchObject]:
+    objs = []
     with open(filepath) as file:
-        return [model(**line) for line in csv.DictReader(file)]
+        for line in csv.DictReader(file):
+            line = {k: v.strip() for k, v in line.items()}
+            objs.append(model(**line))
+    return objs

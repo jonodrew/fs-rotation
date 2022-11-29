@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.1] - 2022-11-29
+### Changed
+- software now matches 'Remote' and 'Available Nationally' as if it were a first_location preference
+- fixed bug where leading spaces in locations meant matches were not made correctly
+
 ## [0.5.0] - 2022-11-24
 ### Added
 - two new fields added to the Candidate input. These reflect nationality and passport requirements
