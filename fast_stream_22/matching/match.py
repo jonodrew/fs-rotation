@@ -7,6 +7,7 @@ from typing import (
     Union,
     Any,
     TypeVar,
+    Optional,
 )
 from munkres import DISALLOWED, make_cost_matrix, Munkres
 
@@ -116,6 +117,18 @@ class Matching:
         ]
         self.score_grid = np.reshape(self.pairs, (len(candidates), len(roles)))
 
+    def reject_impossible_roles(self) -> list[Optional[Role]]:
+        """
+        Identify and reject roles that no candidate can do
+
+        :return: a list of rejected roles
+        """
+        rejects = []
+        for i, column in enumerate(self.score_grid.T):
+            if np.all(column == DISALLOWED):
+                rejects.append(self.roles[i])
+        return rejects
+
     @staticmethod
     def _score_or_disqualify(p: Pair) -> Union[DISALLOWED, int]:
         p.score_pair()
@@ -140,5 +153,4 @@ class Matching:
 
     def _convert_pair(self, pair: tuple[int, int]) -> tuple[str, str]:
         candidate, role = pair
-        self.roles[role].unmatched = False
         return self.candidates[candidate].uid, self.roles[role].uid
