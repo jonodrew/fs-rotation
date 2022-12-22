@@ -1,74 +1,110 @@
 from __future__ import annotations
 
-import itertools
+import dataclasses
 import sys
-from typing import Sequence, Union, Optional
+from typing import (
+    Sequence,
+    Union,
+    Any,
+    TypeVar,
+)
 from munkres import DISALLOWED, make_cost_matrix, Munkres
 
-from fast_stream_22.matching.models import Candidate, Role, Pair
+from fast_stream_22.matching.models import Candidate, Role, Pair, BaseClass
 import numpy as np
+
+
+@dataclasses.dataclass
+class Bid:
+    cohort: int
+    department: str
+    number: int = 0
+    min_number = min([int(0.8 * number), number - 1])
+    count: int = 0
 
 
 class Process:
     def __init__(
         self,
-        candidates: Sequence[Candidate],
+        all_candidates: Sequence[Candidate],
         all_roles: Sequence[Role],
-        bids: dict[str, int] = None,
+        bids: Sequence[Bid],
     ):
-        self.candidates = candidates
-        self.all_roles = all_roles
+        self._all_candidates = all_candidates
+        self.candidate_mapping: dict[str, Candidate] = {
+            c.uid: c for c in all_candidates
+        }
+        self._all_roles = all_roles
+        self.all_roles_mapping: dict[str, Role] = {r.uid: r for r in all_roles}
         self.bids = bids
-        self.pairings: Optional[list[tuple[str, str]]] = None
+        self.pairings: dict[int, Any] = dict()
+        self.max_rounds = 3
 
-    def _filter_roles(self, department: str, bids: int) -> list[Role]:
-        """
-        Return as many roles as the department has bid for.
+    def compute(self):
+        cohorts = sorted(set((bid.cohort for bid in self.bids)), reverse=True)
+        for cohort in cohorts:
+            self.match_cohort(cohort)
 
-        :param department: the department we need to filter
-        :param bids: the number of bids they've made
-        :return: a filtered list of the highest priority roles, with length `bids`
-        """
-        departmental_roles = filter(
-            lambda r: r.department == department, self.all_roles
+    @property
+    def all_candidates(self) -> list[Candidate]:
+        return self.mask_paired(self._all_candidates)
+
+    @property
+    def all_roles(self) -> list[Role]:
+        return sorted(
+            self.mask_paired(self._all_roles),
+            key=lambda role: role.priority_role,
+            reverse=True,
         )
-        sort_by_priority = sorted(
-            departmental_roles, key=lambda role: role.priority_role
-        )
-        return sort_by_priority[:bids]
 
-    def _first_round(self):
-        first_round_roles = list(
-            itertools.chain(
-                *[self._filter_roles(dept, bid_count) for dept, bid_count in self.bids]
+    Pairable = TypeVar("Pairable", bound=BaseClass)
+
+    @staticmethod
+    def mask_paired(data: Sequence[Pairable]) -> list[Pairable]:
+        return [data_point for data_point in data if not data_point.paired]
+
+    @staticmethod
+    def pair_off(
+        candidates: Sequence[Candidate], roles: Sequence[Role]
+    ) -> list[tuple[str, str]]:
+        return Matching(candidates, roles).report_pairs()
+
+    def match_cohort(self, cohort: int, round: int = 0) -> bool:
+        """
+        This method takes a cohort and tries to match the candidates to potential roles. Where matches are made, bids
+        are reduced. This means that once a department has met its quota it no longer gets to put roles in for matching
+
+        :param cohort: the year group we're matching
+        :param round: the number of times we've tried this
+        :return: a boolean signifying if we were successful
+        """
+        cohort_bids: dict[str, Bid] = {
+            bid.department: bid for bid in self.bids if bid.cohort == cohort
+        }
+        if round >= self.max_rounds:
+            return all((lambda bid: bid.count >= bid.min_number, cohort_bids))
+        candidates = [c for c in self.all_candidates if c.year_group == cohort]
+        suitable_roles = [
+            role for role in self.all_roles if cohort in role.suitable_year_groups
+        ]
+        shortlisted_roles = []
+        for bid in cohort_bids.values():
+            shortlisted_roles.extend(
+                [role for role in suitable_roles if role.department == bid.department][
+                    : bid.number - bid.count
+                ]
             )
-        )
-        self.pairings = Matching(self.candidates, first_round_roles).report_pairs()
-        return len(self.pairings) == len(self.candidates)
-
-    def pair_off(self):
-        if self.bids is None:
-            self.pairings = Matching(self.candidates, self.all_roles).report_pairs()
+        pairs = self.pair_off(candidates, shortlisted_roles)
+        for candidate_id, role_id in pairs:
+            self.candidate_mapping[candidate_id].mark_paired()
+            role = self.all_roles_mapping[role_id]
+            role.mark_paired()
+            cohort_bids[role.department].count += 1
+        self.pairings[cohort] = pairs
+        if len(pairs) == len(candidates):
+            return True
         else:
-            if not self._first_round():
-                second_round_roles = [
-                    role
-                    for role in self.all_roles
-                    if role.uid not in (pair[1] for pair in self.pairings)
-                ]
-                second_round_candidates = [
-                    candidate
-                    for candidate in self.candidates
-                    if candidate.uid not in (pair[0] for pair in self.pairings)
-                ]
-                second_round_pairings = Matching(
-                    second_round_candidates, second_round_roles
-                ).report_pairs()
-                if len(second_round_pairings) + len(self.pairings) != self.candidates:
-                    raise Exception
-                else:
-                    self.pairings.extend(second_round_pairings)
-        return self.pairings
+            return self.match_cohort(cohort, round + 1)
 
 
 class Matching:
@@ -104,4 +140,5 @@ class Matching:
 
     def _convert_pair(self, pair: tuple[int, int]) -> tuple[str, str]:
         candidate, role = pair
+        self.roles[role].unmatched = False
         return self.candidates[candidate].uid, self.roles[role].uid
