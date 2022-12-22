@@ -126,7 +126,6 @@ class Role(BaseClass):
         self.immigration_role = json.loads(immigration_role.lower())
         self.skill_focus = skill_focus
         self.secondary_focus = secondary_focus
-        self.unmatched: bool = True
 
     @property
     def clearance_required(self) -> Clearance:
