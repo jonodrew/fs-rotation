@@ -19,7 +19,7 @@ class Bid:
     cohort: int
     department: str
     number: int = 0
-    min_number = min([int(0.8 * number), number - 1])
+    min_number = max([int(0.8 * number), number - 1])
     count: int = 0
 
 
