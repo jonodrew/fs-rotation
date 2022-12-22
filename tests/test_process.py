@@ -37,3 +37,20 @@ class TestProcess:
             mock_get_roles.return_value = roles
             assert p.match_cohort(1)
             assert p.bids[0].count == 5
+
+    def test_all_roles_property_sorts_correctly(self, random_roles):
+        p = Process(
+            [
+                MagicMock(
+                    spec=Candidate,
+                    **{"uid": f"c-{i}", "paired": False, "year_group": 1},
+                )
+                for i in range(10)
+            ],
+            random_roles,
+            bids=[Bid(1, "CO", 5)],
+        )
+        all_roles = p.all_roles
+        first = all_roles[0]
+        last = all_roles[-1]
+        assert first.priority_role.value > last.priority_role.value
