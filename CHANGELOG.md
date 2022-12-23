@@ -7,7 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.7.1]
+## [0.7.1] - 2022-12-23
+### Changed
+- the script is updated to print its outputs
+- the matching algorithm is reversed, so that it starts by matching the most junior cohort
 
 ## [0.7.0] - 2022-12-23
 ### Added
