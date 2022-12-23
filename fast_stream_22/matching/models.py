@@ -37,10 +37,14 @@ class BaseClass:
     def __init__(self, uid: str, clearance: str):
         self.uid = uid
         self._clearance = Clearance[clearance]
+        self.paired = False
 
     @property
     def clearance(self) -> Clearance:
         return self._clearance
+
+    def mark_paired(self):
+        self.paired = True
 
 
 class Candidate(BaseClass):
@@ -111,7 +115,7 @@ class Role(BaseClass):
         self.locations = {loc.strip() for loc in location.split(",")}
         self.department = department
         self.priority_role = Priority[priority_role.upper()]
-        self.suitable_year_groups = {
+        self.suitable_year_groups: set[int] = {
             int(year) for year in suitable_for_year_group.split(",")
         }
         self.private_office_role = json.loads(private_office_role.lower())
@@ -122,6 +126,7 @@ class Role(BaseClass):
         self.immigration_role = json.loads(immigration_role.lower())
         self.skill_focus = skill_focus
         self.secondary_focus = secondary_focus
+        self.no_match: bool = False
 
     @property
     def clearance_required(self) -> Clearance:
@@ -129,6 +134,9 @@ class Role(BaseClass):
 
     def from_anywhere(self) -> bool:
         return not {"Available Nationally", "Remote"}.isdisjoint(self.locations)
+
+    def __repr__(self):
+        return self.uid
 
 
 class Pair:
