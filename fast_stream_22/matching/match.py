@@ -46,12 +46,12 @@ class Process:
 
     def compute(self):
         """
-        Try to solve each cohort in turn, starting with the most senior. When finished, unmark any roles that were
+        Try to solve each cohort in turn, starting with the most junior. When finished, unmark any roles that were
         rejected, as they may be suitable for the next cohort.
 
         :return:
         """
-        cohorts = sorted(set((bid.cohort for bid in self.bids)), reverse=True)
+        cohorts = sorted(set((bid.cohort for bid in self.bids)), reverse=False)
         for cohort in cohorts:
             if self.match_cohort(cohort):
                 print(f"Successfully matched cohort {cohort}")
