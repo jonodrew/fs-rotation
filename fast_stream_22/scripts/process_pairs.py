@@ -33,4 +33,5 @@ def conduct_matching(
     process_obj = Process(
         read_candidates(candidate_file), read_roles(role_file), dept_bids
     )
-    process_obj.match_cohort(1)
+    process_obj.compute()
+    return process_obj.pairings

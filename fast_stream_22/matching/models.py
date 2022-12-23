@@ -126,6 +126,7 @@ class Role(BaseClass):
         self.immigration_role = json.loads(immigration_role.lower())
         self.skill_focus = skill_focus
         self.secondary_focus = secondary_focus
+        self.no_match: bool = False
 
     @property
     def clearance_required(self) -> Clearance:
@@ -133,6 +134,9 @@ class Role(BaseClass):
 
     def from_anywhere(self) -> bool:
         return not {"Available Nationally", "Remote"}.isdisjoint(self.locations)
+
+    def __repr__(self):
+        return self.uid
 
 
 class Pair:

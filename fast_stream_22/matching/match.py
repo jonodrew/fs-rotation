@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import dataclasses
 import sys
+from collections import defaultdict
 from typing import (
     Sequence,
     Union,
-    Any,
     TypeVar,
     Optional,
 )
@@ -20,8 +20,11 @@ class Bid:
     cohort: int
     department: str
     number: int = 0
-    min_number = max([int(0.8 * number), number - 1])
     count: int = 0
+
+    @property
+    def min_number(self):
+        return max([int(0.8 * self.number), self.number - 1, 1])
 
 
 class Process:
@@ -38,22 +41,51 @@ class Process:
         self._all_roles = all_roles
         self.all_roles_mapping: dict[str, Role] = {r.uid: r for r in all_roles}
         self.bids = bids
-        self.pairings: dict[int, Any] = dict()
+        self.pairings: dict[int, list[tuple[str, str]]] = defaultdict(list)
         self.max_rounds = 3
 
     def compute(self):
+        """
+        Try to solve each cohort in turn, starting with the most senior. When finished, unmark any roles that were
+        rejected, as they may be suitable for the next cohort.
+
+        :return:
+        """
         cohorts = sorted(set((bid.cohort for bid in self.bids)), reverse=True)
         for cohort in cohorts:
-            self.match_cohort(cohort)
+            if self.match_cohort(cohort):
+                print(f"Successfully matched cohort {cohort}")
+            else:
+                print(f"Could not match cohort {cohort}")
+            self.reset_roles()
+
+    def reset_roles(self):
+        """
+        Mark all roles as matchable
+
+        :return:
+        """
+        for r in self._all_roles:
+            r.no_match = False
 
     @property
     def all_candidates(self) -> list[Candidate]:
+        """
+        Get all candidates that haven't been paired
+
+        :return: a list of unpaired candidates
+        """
         return self.mask_paired(self._all_candidates)
 
     @property
     def all_roles(self) -> list[Role]:
+        """
+        Get all the roles that haven't been paired and haven't been marked as 'rejected'
+
+        :return: a list of unpaired, unrejected roles
+        """
         return sorted(
-            self.mask_paired(self._all_roles),
+            self.mask_paired([r for r in self._all_roles if not r.no_match]),
             key=lambda role: role.priority_role,
             reverse=True,
         )
@@ -62,12 +94,25 @@ class Process:
 
     @staticmethod
     def mask_paired(data: Sequence[Pairable]) -> list[Pairable]:
+        """
+        Hide the data that's already been paired
+
+        :param data: a sequence of Pairable objects
+        :return: a list of Pairable objects that haven't yet been paired
+        """
         return [data_point for data_point in data if not data_point.paired]
 
     @staticmethod
     def pair_off(
         candidates: Sequence[Candidate], roles: Sequence[Role]
     ) -> list[tuple[str, str]]:
+        """
+        Create a round of Matching, compute it, and return the pairs
+
+        :param candidates: this cohort's candidates
+        :param roles: the potential set of roles
+        :return: a list of paired candidate/role
+        """
         return Matching(candidates, roles).report_pairs()
 
     def match_cohort(self, cohort: int, round: int = 0) -> bool:
@@ -83,7 +128,9 @@ class Process:
             bid.department: bid for bid in self.bids if bid.cohort == cohort
         }
         if round >= self.max_rounds:
-            return all((lambda bid: bid.count >= bid.min_number, cohort_bids))
+            return all(
+                map(lambda bid: bid.count >= bid.min_number, cohort_bids.values())
+            )
         candidates = [c for c in self.all_candidates if c.year_group == cohort]
         suitable_roles = [
             role for role in self.all_roles if cohort in role.suitable_year_groups
@@ -95,13 +142,16 @@ class Process:
                     : bid.number - bid.count
                 ]
             )
+        this_round = Matching(candidates, shortlisted_roles)
+        if this_round.reject_impossible_roles():
+            return self.match_cohort(cohort, round)
         pairs = self.pair_off(candidates, shortlisted_roles)
         for candidate_id, role_id in pairs:
             self.candidate_mapping[candidate_id].mark_paired()
             role = self.all_roles_mapping[role_id]
             role.mark_paired()
             cohort_bids[role.department].count += 1
-        self.pairings[cohort] = pairs
+        self.pairings[cohort].extend(pairs)
         if len(pairs) == len(candidates):
             return True
         else:
@@ -127,6 +177,8 @@ class Matching:
         for i, column in enumerate(self.score_grid.T):
             if np.all(column == DISALLOWED):
                 rejects.append(self.roles[i])
+                self.roles[i].no_match = True
+                print(f"No candidate could be found for role {self.roles[i]}")
         return rejects
 
     @staticmethod
