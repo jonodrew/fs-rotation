@@ -1,9 +1,32 @@
 import random
 import uuid
+from typing import Literal, TypeVar
 
 import pytest
 
-from fast_stream_22.matching.models import Role, Candidate
+from fast_stream_22.matching.models import Role, Candidate, BaseClass
+
+T = TypeVar("T", bound=BaseClass)
+
+
+@pytest.fixture
+def candidate_factory():
+    def _candidate_factory(kwargs):
+        return object_factory("candidate", kwargs)
+
+    return _candidate_factory
+
+
+@pytest.fixture
+def role_factory():
+    def _role_factory(kwargs):
+        return object_factory("role", kwargs)
+
+    return _role_factory
+
+
+def object_factory(object_type: Literal["candidate", "role"], kwargs) -> T:
+    return {"candidate": Candidate, "role": Role}[object_type](**kwargs)  # type: ignore
 
 
 @pytest.fixture
