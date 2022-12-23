@@ -15,7 +15,10 @@ from fast_stream_22.matching.read_in import read_candidates, read_roles
     "--bids", help="Path to file containing bids", default="./bids.csv", type=str
 )
 def process_matches(bids: str, roles: str, candidates: str):
-    return conduct_matching(bids, roles, candidates)
+    cohort_pairings = conduct_matching(bids, roles, candidates)
+    for cohort in cohort_pairings.values():
+        for pair in cohort:
+            print(pair[0], pair[1])
 
 
 def conduct_matching(
