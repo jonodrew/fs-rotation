@@ -1,3 +1,7 @@
+from unittest.mock import patch
+
+from munkres import DISALLOWED
+
 from fast_stream_22.matching.match import Matching
 from fast_stream_22.matching.models import Candidate, Role
 
@@ -17,3 +21,11 @@ class TestMatchClass:
         m = Matching(random_candidates, random_roles)
         pairs = m._match()
         assert pairs
+
+    def test_reject_impossible_roles(self, random_candidates, random_roles):
+        with patch(
+            "fast_stream_22.matching.match.Matching._score_or_disqualify",
+            return_value=DISALLOWED,
+        ):
+            m = Matching(random_candidates, random_roles)
+            assert m.reject_impossible_roles() == random_roles
