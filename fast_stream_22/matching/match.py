@@ -17,6 +17,20 @@ class Matching:
         ]
         self.score_grid = np.reshape(self.pairs, (len(candidates), len(roles)))
 
+    def reject_impossible_roles(self) -> list[Optional[Role]]:
+        """
+        Identify and reject roles that no candidate can do
+
+        :return: a list of rejected roles
+        """
+        rejects = []
+        for i, column in enumerate(self.score_grid.T):
+            if np.all(column == DISALLOWED):
+                rejects.append(self.roles[i])
+                self.roles[i].no_match = True
+                print(f"No candidate could be found for role {self.roles[i]}")
+        return rejects
+
     @staticmethod
     def _score_or_disqualify(p: Pair) -> Union[DISALLOWED, int]:
         p.score_pair()
