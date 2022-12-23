@@ -6,12 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-## [0.7.0]
+
+## [0.7.1]
+
+## [0.7.0] - 2022-12-23
 ### Added
 - a new object, `Process`, is added. This provides an interface for running multiple rounds of matching
-- We've done this because of a new requirement: often, departments provide more roles than they overbid, sometimes
-  providing up to 10% more roles than they can afford. The `Process` object takes a `bids` argument, currently a
-  dictionary, that has key-value pairs representing the number of bids a department has made
+- a new `Bid` object is added, which contains the bids for candidates
+- We've done this because of a new requirement: often, departments provide more roles than they bid for. Sometimes they
+  provide up to 10% more roles than they can afford. The `Process` object takes a `bids` argument.
+- Bids should be provided as a CSV file. The department names in both the bids file and the roles file _and_ the
+  candidates' previous roles must be the same. This is a fragility in the system I would like to improve in the new year
 
 ## [0.6.1] - 2022-11-29
 ### Changed
