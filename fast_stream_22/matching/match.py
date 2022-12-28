@@ -58,6 +58,30 @@ class Process:
             else:
                 print(f"Could not match cohort {cohort}")
             self.reset_roles()
+        total_bids = 0
+        total_count = 0
+        dept_bids_mapping = defaultdict(list)
+
+        for bid in self.bids:
+            dept_bids_mapping[bid.department].append(bid)
+            print(
+                f"{bid.department} bid for {bid.number} from Cohort {bid.cohort} and"
+                f" was assigned {bid.count}"
+            )
+            total_bids += bid.number
+        all_min_bids = 0
+        for dept, bids in dept_bids_mapping.items():
+            all_bids = sum([b.number for b in bids])
+            min_bids = sum([b.min_number for b in bids])
+            all_min_bids += min_bids
+            this_count = sum([b.count for b in bids])
+            total_count += this_count
+            print(f"{dept},{all_bids},{this_count}")
+            # print(f"Department {dept} bid for {all_bids} and received {total_count} or {total_count/all_bids*100}%")
+        print(
+            f"There were {total_bids} bids in total against {total_count} total"
+            " candidates"
+        )
 
     def reset_roles(self):
         """

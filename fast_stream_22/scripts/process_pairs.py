@@ -4,6 +4,7 @@ from functools import partial
 import click
 from fast_stream_22.matching.match import Process, Bid
 from fast_stream_22.matching.read_in import read_candidates, read_roles
+import time
 
 
 @click.command
@@ -15,10 +16,13 @@ from fast_stream_22.matching.read_in import read_candidates, read_roles
     "--bids", help="Path to file containing bids", default="./bids.csv", type=str
 )
 def process_matches(bids: str, roles: str, candidates: str):
+    start = time.time()
     cohort_pairings = conduct_matching(bids, roles, candidates)
     for cohort in cohort_pairings.values():
         for pair in cohort:
             print(pair[0], pair[1])
+    end = time.time()
+    print(f"Task completed in {(end-start)*1000} milliseconds")
 
 
 def conduct_matching(
