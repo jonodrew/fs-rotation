@@ -27,12 +27,16 @@ class Bid:
         return max([int(0.8 * self.number), self.number - 1, 1])
 
 
+Result = tuple[str, str, int]
+
+
 class Process:
     def __init__(
         self,
         all_candidates: Sequence[Candidate],
         all_roles: Sequence[Role],
         bids: Sequence[Bid],
+        senior_to_junior: bool = False,
     ):
         self._all_candidates = all_candidates
         self.candidate_mapping: dict[str, Candidate] = {
@@ -41,17 +45,35 @@ class Process:
         self._all_roles = all_roles
         self.all_roles_mapping: dict[str, Role] = {r.uid: r for r in all_roles}
         self.bids = bids
-        self.pairings: dict[int, list[tuple[str, str]]] = defaultdict(list)
+        self.pairings: dict[int, list[Result]] = defaultdict(list)
         self.max_rounds = 3
+        self.senior_to_junior = senior_to_junior
 
-    def compute(self):
+    def tuning(self):
         """
-        Try to solve each cohort in turn, starting with the most junior. When finished, unmark any roles that were
-        rejected, as they may be suitable for the next cohort.
+        If a department has below its minimum bids, we:
+        - find all the candidates who can do that role
+        - find their current matched score
+        - compare with the score for this department's role
+        - switch if they are the same AND the department they're switching from wouldn't go below minimum
 
         :return:
         """
-        cohorts = sorted(set((bid.cohort for bid in self.bids)), reverse=False)
+        pass
+
+    def tune_role(self, role_id: str):
+        pass
+
+    def compute(self):
+        """
+        Try to solve each cohort in turn. The order is defined in self.senior_to_junior. When finished, unmark any roles
+        that were rejected, as they may be suitable for the next cohort.
+
+        :return:
+        """
+        cohorts = sorted(
+            set((bid.cohort for bid in self.bids)), reverse=self.senior_to_junior
+        )
         for cohort in cohorts:
             if self.match_cohort(cohort):
                 print(f"Successfully matched cohort {cohort}")
@@ -61,22 +83,20 @@ class Process:
         total_bids = 0
         total_count = 0
         dept_bids_mapping = defaultdict(list)
-
+        print("bids/count")
         for bid in self.bids:
             dept_bids_mapping[bid.department].append(bid)
-            print(
-                f"{bid.department} bid for {bid.number} from Cohort {bid.cohort} and"
-                f" was assigned {bid.count}"
-            )
             total_bids += bid.number
         all_min_bids = 0
         for dept, bids in dept_bids_mapping.items():
-            all_bids = sum([b.number for b in bids])
+            bids_matches = ",".join([f"{bid.number}, {bid.count}" for bid in bids])
+            print(f"{dept}, {bids_matches}")
+            # all_bids = sum([b.number for b in bids])
             min_bids = sum([b.min_number for b in bids])
             all_min_bids += min_bids
             this_count = sum([b.count for b in bids])
             total_count += this_count
-            print(f"{dept},{all_bids},{this_count}")
+            # print(f"{dept},{all_bids},{this_count}")
             # print(f"Department {dept} bid for {all_bids} and received {total_count} or {total_count/all_bids*100}%")
         print(
             f"There were {total_bids} bids in total against {total_count} total"
@@ -160,7 +180,9 @@ class Process:
             role for role in self.all_roles if cohort in role.suitable_year_groups
         ]
         shortlisted_roles = []
-        for bid in cohort_bids.values():
+        for bid in sorted(
+            cohort_bids.values(), key=lambda bid: bid.number, reverse=False
+        ):
             shortlisted_roles.extend(
                 [role for role in suitable_roles if role.department == bid.department][
                     : bid.number - bid.count
@@ -170,12 +192,21 @@ class Process:
         if this_round.reject_impossible_roles():
             return self.match_cohort(cohort, round)
         pairs = self.pair_off(candidates, shortlisted_roles)
+        pair_scores: list[Result] = []
         for candidate_id, role_id in pairs:
             self.candidate_mapping[candidate_id].mark_paired()
             role = self.all_roles_mapping[role_id]
             role.mark_paired()
             cohort_bids[role.department].count += 1
-        self.pairings[cohort].extend(pairs)
+            pair_scores.append(
+                (
+                    candidate_id,
+                    role_id,
+                    Pair(self.candidate_mapping[candidate_id], role).score_pair(),
+                )
+            )
+
+        self.pairings[cohort].extend(pair_scores)
         if len(pairs) == len(candidates):
             return True
         else:
