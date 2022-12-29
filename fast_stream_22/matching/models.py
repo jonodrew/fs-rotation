@@ -222,12 +222,26 @@ class Pair:
         )
 
     def _score_skill(self):
+        """
+        This scores the skills the candidate against the scores offered by the role. If the department has offered a
+        role that offers "ALL" skills, it scores the top score once. However, this is less that a role would score if
+        both foci matched. This is to discourage departments offering generic roles with "ALL" skills.
+
+        :return:
+        """
         bonus = self.scoring_weights["skill"]
-        for skill in (self.candidate.primary_skill, self.candidate.secondary_skill):
-            for focus in (self.role.skill_focus, self.role.secondary_focus):
-                if skill == focus:
-                    self._score += bonus
-                bonus -= 5
+        foci = [self.role.skill_focus, self.role.secondary_focus]
+        if "ALL" in foci:
+            self._score += bonus
+        else:
+            for focus in foci:
+                for skill in (
+                    self.candidate.primary_skill,
+                    self.candidate.secondary_skill,
+                ):
+                    if focus == skill:
+                        self._score += bonus
+                        bonus -= 5
 
     def _stretch_check(self):
         if (
