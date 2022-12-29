@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import dataclasses
+import functools
 import sys
 from collections import defaultdict
 from typing import (
@@ -144,22 +145,24 @@ class Process:
         """
         return Matching(candidates, roles).report_pairs()
 
-    def match_cohort(self, cohort: int, round: int = 0) -> bool:
-        """
-        This method takes a cohort and tries to match the candidates to potential roles. Where matches are made, bids
-        are reduced. This means that once a department has met its quota it no longer gets to put roles in for matching
+    @functools.lru_cache
+    def _cohort_bids(self, cohort: int) -> dict[str, Bid]:
+        return {bid.department: bid for bid in self.bids if bid.cohort == cohort}
 
-        :param cohort: the year group we're matching
-        :param round: the number of times we've tried this
-        :return: a boolean signifying if we were successful
+    def _prepare_round(
+        self, cohort: int, round_number: int
+    ) -> tuple[list[Candidate], list[Role]]:
+        """
+        Prepare the inputs for a round of matching. If this is the zeroth round, limit roles to be put forward to 80% of
+        a department's total bid. After that, put forward (bids - awarded) bids from each department
+
+        :param cohort: an integer describing the cohort
+        :param round_number: the number for this round
+        :return: a tuple, consisting of a list of candidates and a list of roles
         """
         cohort_bids: dict[str, Bid] = {
             bid.department: bid for bid in self.bids if bid.cohort == cohort
         }
-        if round >= self.max_rounds:
-            return all(
-                map(lambda bid: bid.count >= bid.min_number, cohort_bids.values())
-            )
         candidates = [c for c in self.all_candidates if c.year_group == cohort]
         suitable_roles = [
             role for role in self.all_roles if cohort in role.suitable_year_groups
@@ -168,7 +171,7 @@ class Process:
         for bid in sorted(
             cohort_bids.values(), key=lambda bid: bid.number, reverse=False
         ):
-            if round == 0:
+            if round_number == 0:
                 shortlist_length = bid.min_number
             else:
                 shortlist_length = bid.number - bid.count
@@ -177,9 +180,26 @@ class Process:
                     :shortlist_length
                 ]
             )
+        return candidates, shortlisted_roles
+
+    def match_cohort(self, cohort: int, round_number: int = 0) -> bool:
+        """
+        This method takes a cohort and tries to match the candidates to potential roles. Where matches are made, bids
+        are reduced. This means that once a department has met its quota it no longer gets to put roles in for matching
+
+        :param cohort: the year group we're matching
+        :param round_number: the number of times we've tried this
+        :return: a boolean signifying if we were successful
+        """
+        cohort_bids = self._cohort_bids(cohort)
+        if round_number >= self.max_rounds:
+            return all(
+                map(lambda bid: bid.count >= bid.min_number, cohort_bids.values())
+            )
+        candidates, shortlisted_roles = self._prepare_round(cohort, round_number)
         this_round = Matching(candidates, shortlisted_roles)
         if this_round.reject_impossible_roles():
-            return self.match_cohort(cohort, round)
+            return self.match_cohort(cohort, round_number)
         pairs = self.pair_off(candidates, shortlisted_roles)
         pair_scores: list[Result] = []
         for candidate_id, role_id in pairs:
@@ -199,7 +219,7 @@ class Process:
         if len(pairs) == len(candidates):
             return True
         else:
-            return self.match_cohort(cohort, round + 1)
+            return self.match_cohort(cohort, round_number + 1)
 
 
 class Matching:
