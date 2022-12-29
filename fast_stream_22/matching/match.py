@@ -24,7 +24,10 @@ class Bid:
 
     @property
     def min_number(self):
-        return max([int(0.8 * self.number), self.number - 1, 1])
+        if self.number == 0:
+            return 0
+        else:
+            return max([int(0.8 * self.number), self.number - 1, 1])
 
 
 Result = tuple[str, str, int]
@@ -183,9 +186,13 @@ class Process:
         for bid in sorted(
             cohort_bids.values(), key=lambda bid: bid.number, reverse=False
         ):
+            if round == 0:
+                shortlist_length = bid.min_number
+            else:
+                shortlist_length = bid.number - bid.count
             shortlisted_roles.extend(
                 [role for role in suitable_roles if role.department == bid.department][
-                    : bid.number - bid.count
+                    :shortlist_length
                 ]
             )
         this_round = Matching(candidates, shortlisted_roles)
