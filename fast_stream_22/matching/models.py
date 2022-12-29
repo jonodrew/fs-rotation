@@ -146,7 +146,6 @@ class Pair:
         "department": 10,
         "skill": 20,
         "stretch": 10,
-        "priority": 5,
     }
 
     def __init__(self, c: Candidate, r: Role):
@@ -154,8 +153,6 @@ class Pair:
         self.role = r
         self._score: int = 0
         self._disqualified = False
-        if self.role.priority_role:
-            self._score += self.scoring_weights["priority"]
 
     def score_pair(self) -> int:
         self._check_location()
