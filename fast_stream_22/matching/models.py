@@ -168,11 +168,7 @@ class Pair:
         self._stretch_check()
         self._check_nationality()
         self._check_passport()
-        self._score_priority()
         return self._score
-
-    def _score_priority(self):
-        self._score += self.scoring_weights["priority"] * self.role.priority_role.value
 
     def _check_location(self):
         if not self.candidate.can_relocate:
