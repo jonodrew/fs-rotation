@@ -71,21 +71,18 @@ class Process:
         total_bids = 0
         total_count = 0
         dept_bids_mapping = defaultdict(list)
-        print("bids/count")
         for bid in self.bids:
             dept_bids_mapping[bid.department].append(bid)
             total_bids += bid.number
         all_min_bids = 0
+        print("bids/count")
         for dept, bids in dept_bids_mapping.items():
-            bids_matches = ",".join([f"{bid.number}, {bid.count}" for bid in bids])
-            print(f"{dept}, {bids_matches}")
-            # all_bids = sum([b.number for b in bids])
+            bids_matches = ",".join([f"{bid.number},{bid.count}" for bid in bids])
+            print(f"{dept},{bids_matches}")
             min_bids = sum([b.min_number for b in bids])
             all_min_bids += min_bids
             this_count = sum([b.count for b in bids])
             total_count += this_count
-            # print(f"{dept},{all_bids},{this_count}")
-            # print(f"Department {dept} bid for {all_bids} and received {total_count} or {total_count/all_bids*100}%")
         print(
             f"There were {total_bids} bids in total against {total_count} total"
             " candidates"
