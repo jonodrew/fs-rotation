@@ -46,6 +46,9 @@ class BaseClass:
     def mark_paired(self):
         self.paired = True
 
+    def __repr__(self):
+        return self.uid
+
 
 class Candidate(BaseClass):
     def __init__(
@@ -134,9 +137,6 @@ class Role(BaseClass):
 
     def from_anywhere(self) -> bool:
         return not {"Available Nationally", "Remote"}.isdisjoint(self.locations)
-
-    def __repr__(self):
-        return self.uid
 
 
 class Pair:
