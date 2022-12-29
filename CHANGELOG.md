@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.2] - 2022-12-29
+### Changed
+- `Pair` no longer scores the priority of the role. The priority is used to decide in which order to feed roles into
+  the process, but we shouldn't be increasing a role's score just because a department think it's important. Their
+  context is not our context
+
 ## [0.7.1] - 2022-12-23
 ### Changed
 - the script is updated to print its outputs
