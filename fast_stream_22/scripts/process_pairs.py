@@ -8,6 +8,7 @@ import time
 
 
 @click.command
+@click.option("--senior_first", help="Match seniors first", default=True, type=bool)
 @click.option(
     "--candidates", help="Path to candidates file", default="./candidates.csv", type=str
 )
@@ -15,20 +16,18 @@ import time
 @click.option(
     "--bids", help="Path to file containing bids", default="./bids.csv", type=str
 )
-def process_matches(bids: str, roles: str, candidates: str):
+def process_matches(bids: str, roles: str, candidates: str, senior_first: bool):
     start = time.time()
-    cohort_pairings = conduct_matching(bids, roles, candidates)
+    cohort_pairings = conduct_matching(bids, roles, candidates, senior_first)
     for cohort in cohort_pairings.values():
         for pair in cohort:
-            print(pair[0], pair[1])
+            print(pair[0], pair[1], pair[2])
     end = time.time()
     print(f"Task completed in {(end-start)*1000} milliseconds")
 
 
 def conduct_matching(
-    bid_file: str = "./bids.csv",
-    role_file: str = "./roles.csv",
-    candidate_file: str = "./roles.csv",
+    bid_file: str, role_file: str, candidate_file: str, senior_first: bool
 ):
     dept_bids = []
     with open(bid_file) as bids_file:
@@ -38,7 +37,7 @@ def conduct_matching(
             for cohort, value in enumerate(row[1:]):
                 dept_bids.extend([partial_bid(cohort=cohort + 1, number=int(value))])
     process_obj = Process(
-        read_candidates(candidate_file), read_roles(role_file), dept_bids
+        read_candidates(candidate_file), read_roles(role_file), dept_bids, senior_first
     )
     process_obj.compute()
     return process_obj.pairings
