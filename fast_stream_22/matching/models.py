@@ -146,7 +146,6 @@ class Pair:
         "department": 10,
         "skill": 20,
         "stretch": 10,
-        "priority": 5,
     }
 
     def __init__(self, c: Candidate, r: Role):
@@ -154,8 +153,6 @@ class Pair:
         self.role = r
         self._score: int = 0
         self._disqualified = False
-        if self.role.priority_role:
-            self._score += self.scoring_weights["priority"]
 
     def score_pair(self) -> int:
         self._check_location()
@@ -168,11 +165,7 @@ class Pair:
         self._stretch_check()
         self._check_nationality()
         self._check_passport()
-        self._score_priority()
         return self._score
-
-    def _score_priority(self):
-        self._score += self.scoring_weights["priority"] * self.role.priority_role.value
 
     def _check_location(self):
         if not self.candidate.can_relocate:
