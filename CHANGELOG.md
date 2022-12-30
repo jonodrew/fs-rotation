@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- calculating a score for a role that offers "ALL" skills has changed, and now offers X points
+
+## [0.7.4] - 2022-12-30
+### Changed
+- `Pair` now disqualifies scores below 20. This is currently hard-coded but will be altered in a future release
 
 ## [0.7.3] - 2022-12-29
 ### Changed
