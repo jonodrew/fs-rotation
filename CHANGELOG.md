@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.4] - 2022-12-30
+### Changed
+- organisations sometimes offer roles that claim to upskill across all required skill areas. To acknowledge this,
+  those roles are scored once, and reasonably highly. However, to discourage departments simply claiming all roles
+  are like this, they still score lower than a true match.
+
 ## [0.7.3] - 2022-12-29
 ### Changed
 - in the first round of matching each cohort, departments may only put forwards 80% of their bids for consideration.
