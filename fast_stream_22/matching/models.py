@@ -165,6 +165,7 @@ class Pair:
         self._stretch_check()
         self._check_nationality()
         self._check_passport()
+        self._check_score()
         return self._score
 
     def _check_location(self):
@@ -241,6 +242,10 @@ class Pair:
                 self._score += self.scoring_weights["stretch"]
             if self.candidate.wants_line_management and self.role.line_management_role:
                 self._score += self.scoring_weights["stretch"]
+
+    def _check_score(self):
+        if self.score < 20:
+            self.disqualified = True
 
     @property
     def disqualified(self):
