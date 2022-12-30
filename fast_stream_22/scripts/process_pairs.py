@@ -33,7 +33,7 @@ def conduct_matching(
     with open(bid_file) as bids_file:
         bids_reader = csv.reader(bids_file)
         for row in bids_reader:
-            partial_bid = partial(Bid, department=row[0])
+            partial_bid = partial(Bid, _department=row[0])
             for cohort, value in enumerate(row[1:]):
                 dept_bids.extend([partial_bid(cohort=cohort + 1, number=int(value))])
     process_obj = Process(

@@ -19,7 +19,7 @@ import numpy as np
 @dataclasses.dataclass
 class Bid:
     cohort: int
-    department: str
+    _department: str
     number: int = 0
     count: int = 0
 
@@ -29,6 +29,10 @@ class Bid:
             return 0
         else:
             return max([int(0.8 * self.number), self.number - 1, 1])
+
+    @property
+    def department(self):
+        return self._department.lower()
 
 
 Result = tuple[str, str, int]
@@ -160,9 +164,7 @@ class Process:
         :param round_number: the number for this round
         :return: a tuple, consisting of a list of candidates and a list of roles
         """
-        cohort_bids: dict[str, Bid] = {
-            bid.department: bid for bid in self.bids if bid.cohort == cohort
-        }
+        cohort_bids = self._cohort_bids(cohort)
         candidates = [c for c in self.all_candidates if c.year_group == cohort]
         suitable_roles = [
             role for role in self.all_roles if cohort in role.suitable_year_groups

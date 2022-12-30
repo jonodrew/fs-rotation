@@ -34,10 +34,18 @@ class NationalityRequirement(IntEnum):
 
 
 class BaseClass:
+    departments: set[str] = set()
+
     def __init__(self, uid: str, clearance: str):
         self.uid = uid
         self._clearance = Clearance[clearance]
         self.paired = False
+
+    @classmethod
+    def _stringify_department(cls, dept: str) -> str:
+        dept = dept.lower().strip()
+        cls.departments.add(dept)
+        return dept
 
     @property
     def clearance(self) -> Clearance:
@@ -51,6 +59,8 @@ class BaseClass:
 
 
 class Candidate(BaseClass):
+    departments: set[str] = set()
+
     def __init__(
         self,
         uuid: str,
@@ -75,7 +85,9 @@ class Candidate(BaseClass):
         self.first_preference_location = first_location_preference
         self.second_preference_location = second_location_preference
         self.year_group = int(year_group)
-        self.prior_departments = set(prior_departments.split(","))
+        self.prior_departments = set(
+            map(self._stringify_department, prior_departments.split(","))
+        )
         self.wants_line_management = json.loads(wants_line_management.lower())
         self.wants_private_office = json.loads(wants_private_office.lower())
         self.no_defence = json.loads(no_defence.lower())
@@ -88,6 +100,8 @@ class Candidate(BaseClass):
 
 
 class Role(BaseClass):
+    departments: set[str] = set()
+
     def __init__(
         self,
         uuid: str,
@@ -116,7 +130,7 @@ class Role(BaseClass):
         ]
         self.passport_requirement = json.loads(passport_requirement.lower())
         self.locations = {loc.strip() for loc in location.split(",")}
-        self.department = department
+        self.department = self._stringify_department(department)
         self.priority_role = Priority[priority_role.upper()]
         self.suitable_year_groups: set[int] = {
             int(year) for year in suitable_for_year_group.split(",")
