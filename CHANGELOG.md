@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - calculating a score for a role that offers "ALL" skills has changed, and now offers X points
 
+## [0.8.0] - 2023-01-31
+- Welcome back!
+### Changed
+- inputs to `Candidate` objects must now include args `last_role_main_skill` and `last_role_secondary_skill`
+- this supports a change to the scoring mechanism for skills, which disqualifies a match where the main skill would
+  be the same as it was in the candidate's previous role
+- matches where the secondary skill would be the same as the previous role's secondary skill are also penalised, but
+  not disqualified
+
 ## [0.7.4] - 2022-12-30
 ### Changed
 - `Pair` now disqualifies scores below 20. This is currently hard-coded but will be altered in a future release
