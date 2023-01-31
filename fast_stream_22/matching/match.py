@@ -12,7 +12,8 @@ from typing import (
 )
 from munkres import DISALLOWED, make_cost_matrix, Munkres
 
-from fast_stream_22.matching.models import Candidate, Role, Pair, BaseClass
+from fast_stream_22.matching.models import Candidate, Role, BaseClass
+from fast_stream_22.matching.pair import Pair
 import numpy as np
 
 
