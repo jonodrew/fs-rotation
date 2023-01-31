@@ -53,6 +53,8 @@ def random_candidate_dict():
             "secondary_skills_seeking": "Digital",
             "british_national": "British National",
             "has_passport": True,
+            "last_role_main_skill": "Policy",
+            "last_role_secondary_skill": "Corporate",
         }
         candidate["prior_departments"] = ",".join(
             random.sample(departments, k=candidate["year_group"] - 1)
