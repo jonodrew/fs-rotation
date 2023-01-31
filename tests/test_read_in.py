@@ -20,6 +20,8 @@ class TestInstantiation:
             "Digital",
             "British National",
             "true",
+            "Ops",
+            "Digital",
         ]
         candidate = Candidate(*c_data_row)
         assert candidate

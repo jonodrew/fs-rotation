@@ -1,5 +1,5 @@
 from enum import IntEnum
-from typing import Literal
+from typing import Literal, Optional
 import json
 
 SkillLevel = Literal[0, 1, 2, 3, 4, 5]
@@ -79,6 +79,8 @@ class Candidate(BaseClass):
         secondary_skills_seeking: str,
         british_national: str,
         has_passport: StrBool,
+        last_role_main_skill: Optional[str] = None,
+        last_role_secondary_skill: Optional[str] = None,
     ):
         super().__init__(uuid, clearance_held)
         self.can_relocate = json.loads(can_relocate.lower())
@@ -97,6 +99,8 @@ class Candidate(BaseClass):
         self.secondary_skill = secondary_skills_seeking
         self.british_national = Nationality[british_national.replace(" ", "_").upper()]
         self.has_passport = json.loads(has_passport.lower())
+        self.last_role_main_skill = last_role_main_skill
+        self.last_role_secondary_skill = last_role_secondary_skill
 
 
 class Role(BaseClass):
@@ -236,13 +240,19 @@ class Pair:
             self.candidate.year_group not in self.role.suitable_year_groups
         )
 
-    def _score_skill(self):
+    def _score_skill(self) -> None:
+        if self.role.secondary_focus == self.candidate.last_role_secondary_skill:
+            self._score -= 5
         bonus = self.scoring_weights["skill"]
         for skill in (self.candidate.primary_skill, self.candidate.secondary_skill):
             for focus in (self.role.skill_focus, self.role.secondary_focus):
                 if skill == focus:
                     self._score += bonus
                 bonus -= 5
+
+    def _disqualify_skill(self) -> None:
+        if self.candidate.last_role_main_skill == self.role.skill_focus:
+            self.disqualified = True
 
     def _stretch_check(self):
         if (
