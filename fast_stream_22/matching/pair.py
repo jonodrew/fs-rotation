@@ -112,12 +112,6 @@ class Pair:
                 bonus -= 5
 
     @scoring_methods
-    def _disqualify_skill(self) -> None:
-        if self.candidate.last_role_main_skill == self.role.skill_focus:
-            print(self.candidate.last_role_main_skill, self.role.skill_focus)
-            self.disqualified = True
-
-    @scoring_methods
     def _stretch_check(self):
         if (
             not self.candidate.wants_private_office and self.role.private_office_role
