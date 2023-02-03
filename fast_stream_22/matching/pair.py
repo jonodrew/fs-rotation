@@ -1,10 +1,13 @@
-from typing import Callable
+from typing import Callable, TypeVar
 
 from fast_stream_22.matching.models import Candidate, Role
 
 
+P = TypeVar("P", bound="Pair")
+
+
 class RuleSet(set):
-    def __call__(self, rule: Callable[["Pair"], None]) -> Callable[["Pair"], None]:
+    def __call__(self, rule: Callable[[P], None]) -> Callable[[P], None]:
         """
         This allows an instance of this class to decorate a scoring rule. It then registers it on the class, allowing us
         to collect all the scoring rules together and then call them one-by-one
@@ -14,6 +17,10 @@ class RuleSet(set):
         """
         self.add(rule)
         return rule
+
+
+C = TypeVar("C", bound=Candidate)
+R = TypeVar("R", bound=Role)
 
 
 class Pair:
@@ -26,9 +33,9 @@ class Pair:
     }
     scoring_methods = RuleSet()
 
-    def __init__(self, c: Candidate, r: Role):
-        self.candidate = c
-        self.role = r
+    def __init__(self, candidate: C, role: R):
+        self.candidate = candidate
+        self.role = role
         self._score: int = 0
         self._disqualified = False
 
