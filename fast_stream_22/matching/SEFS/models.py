@@ -1,7 +1,7 @@
 from typing import Literal
 
-from fast_stream_22.matching import Pair, Role, Candidate
-from fast_stream_22.matching.pair import register_scoring_method
+from fast_stream_22.matching import Role, Candidate
+from fast_stream_22.matching.pair import register_scoring_method, BasePair
 
 Level = Literal["P", "A", "N"]
 
@@ -32,12 +32,11 @@ class SefsRole(Role):
         }
 
 
-class SefsPair(Pair):
+class SefsPair(BasePair):
     def __init__(self, c: SefsCandidate, r: SefsRole):
         super().__init__(c, r)
 
     @register_scoring_method
-    def _score_skill(self) -> None:
-        if isinstance(self.role, SefsRole):
-            for skill, level in self.role.skills.items():
-                pass
+    def _score_skill(self, candidate: SefsCandidate, role: SefsRole) -> None:
+        for skill, level in role.skills.items():
+            pass

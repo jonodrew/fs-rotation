@@ -4,15 +4,15 @@ from fast_stream_22.matching.models import Candidate, Role
 
 
 P = TypeVar("P", bound="BasePair")
-
-
-def register_scoring_method(func: Callable[[P], None]) -> Callable[[P], None]:
-    func._is_scoring_method = True  # type: ignore
-    return func
-
-
 C = TypeVar("C", bound=Candidate)
 R = TypeVar("R", bound=Role)
+
+
+def register_scoring_method(
+    func: Callable[[P, C, R], None]
+) -> Callable[[P, C, R], None]:
+    func._is_scoring_method = True  # type: ignore
+    return func
 
 
 class BasePair:
@@ -31,7 +31,7 @@ class BasePair:
         self._disqualified = False
 
     @property
-    def scoring_methods(self) -> set[Callable[[], None]]:
+    def scoring_methods(self) -> set[Callable[[C, R], None]]:
         """
         Collect the methods marked for scoring for this class
 
@@ -39,42 +39,19 @@ class BasePair:
         """
         return {getattr(self, name) for name in self.scoring_method_names}
 
-    def score_pair(self) -> int:
+    def score_pair(self, candidate=None, role=None) -> int:
         """
         Run through the scoring methods for this class
 
+        :param candidate:
+        :param role:
         :return: an int representing the final score for this Pair
         """
         for method in self.scoring_methods:
-            method()
+            method(self.candidate, self.role)
         self._check_score()
         return self._score
 
-    def _check_score(self) -> None:
-        """
-        The lowest acceptable score for a match. If the score is too low, set `self.disqualified` to `True`
-
-        :return:
-        """
-        raise NotImplementedError
-
-    @property
-    def disqualified(self):
-        return self._disqualified
-
-    @disqualified.setter
-    def disqualified(self, value: bool):
-        if self._disqualified or value:
-            self._disqualified = True
-        else:
-            self._disqualified = False
-
-    @property
-    def score(self):
-        return self._score
-
-
-class Pair(BasePair):
     scoring_weights: dict[str, int] = {
         "first_location": 10,
         "second_location": 5,
@@ -84,92 +61,106 @@ class Pair(BasePair):
     }
 
     @register_scoring_method
-    def _check_location(self):
-        if not self.candidate.can_relocate:
+    def _check_location(self, candidate: C, role: R) -> None:
+        if not candidate.can_relocate:
             self._disqualified = not (
-                self.role.from_anywhere()
-                or self.candidate.first_preference_location in self.role.locations
-                or self.candidate.second_preference_location in self.role.locations
+                role.from_anywhere()
+                or candidate.first_preference_location in role.locations
+                or candidate.second_preference_location in role.locations
             )
 
     @register_scoring_method
-    def _score_location(self):
-        if self.role.from_anywhere():
+    def _score_location(self, candidate: C, role: R) -> None:
+        if role.from_anywhere():
             self._score += self.scoring_weights["first_location"]
         elif (
-            self.candidate.first_preference_location in self.role.locations
-            or self.candidate.first_preference_location == "Any"
+            candidate.first_preference_location in role.locations
+            or candidate.first_preference_location == "Any"
         ):
             self._score += self.scoring_weights["first_location"]
         elif (
-            self.candidate.second_preference_location in self.role.locations
-            or self.candidate.second_preference_location == "Any"
+            candidate.second_preference_location in role.locations
+            or candidate.second_preference_location == "Any"
         ):
             self._score += self.scoring_weights["second_location"]
 
     @register_scoring_method
-    def _score_clearance(self):
-        self.disqualified = self.candidate.clearance < self.role.clearance
+    def _score_clearance(self, candidate: C, role: R) -> None:
+        self.disqualified = candidate.clearance < role.clearance
 
     @register_scoring_method
-    def _check_nationality(self):
+    def _check_nationality(self, candidate: C, role: R) -> None:
         """
         Nationality requirements come in three flavours: British national only, dual national, no restriction
 
         :return:
         """
-        self.disqualified = (
-            self.role.nationality_requirement > self.candidate.british_national
-        )
+        self.disqualified = role.nationality_requirement > candidate.british_national
 
     @register_scoring_method
-    def _check_passport(self):
-        self.disqualified = (
-            self.role.passport_requirement and not self.candidate.has_passport
-        )
+    def _check_passport(self, candidate: C, role: R) -> None:
+        self.disqualified = role.passport_requirement and not candidate.has_passport
 
     @register_scoring_method
-    def _score_department(self):
-        if self.role.department not in self.candidate.prior_departments:
+    def _score_department(self, candidate: C, role: R) -> None:
+        if role.department not in candidate.prior_departments:
             self._score += self.scoring_weights["department"]
 
     @register_scoring_method
-    def _ethical_check(self):
-        self.disqualified = (
-            self.candidate.no_immigration and self.role.immigration_role
-        ) or (self.candidate.no_defence and self.role.defence_role)
-
-    @register_scoring_method
-    def _appropriate_for_year_group(self):
-        self.disqualified = (
-            self.candidate.year_group not in self.role.suitable_year_groups
+    def _ethical_check(self, candidate: C, role: R) -> None:
+        self.disqualified = (candidate.no_immigration and role.immigration_role) or (
+            candidate.no_defence and role.defence_role
         )
 
     @register_scoring_method
-    def _score_skill(self) -> None:
-        if self.role.secondary_focus == self.candidate.last_role_secondary_skill:
-            self._score -= 5
-        bonus = self.scoring_weights["skill"]
-        for skill in (self.candidate.primary_skill, self.candidate.secondary_skill):
-            for focus in (self.role.skill_focus, self.role.secondary_focus):
-                if skill == focus:
-                    self._score += bonus
-                bonus -= 5
+    def _appropriate_for_year_group(self, candidate: C, role: R) -> None:
+        self.disqualified = candidate.year_group not in role.suitable_year_groups
 
     @register_scoring_method
-    def _stretch_check(self):
-        if (
-            not self.candidate.wants_private_office and self.role.private_office_role
-        ) or (
-            not self.candidate.wants_line_management and self.role.line_management_role
+    def _stretch_check(self, candidate: C, role: R) -> None:
+        if (not candidate.wants_private_office and role.private_office_role) or (
+            not candidate.wants_line_management and role.line_management_role
         ):
             self.disqualified = True
         else:
-            if self.candidate.wants_private_office and self.role.private_office_role:
+            if candidate.wants_private_office and role.private_office_role:
                 self._score += self.scoring_weights["stretch"]
-            if self.candidate.wants_line_management and self.role.line_management_role:
+            if candidate.wants_line_management and role.line_management_role:
                 self._score += self.scoring_weights["stretch"]
 
-    def _check_score(self):
+    def _check_score(self) -> None:
+        """
+        The lowest acceptable score for a match. If the score is too low, set `self.disqualified` to `True`
+
+        :return:
+        """
         if self.score < 20:
             self.disqualified = True
+
+    @property
+    def disqualified(self) -> bool:
+        return self._disqualified
+
+    @disqualified.setter
+    def disqualified(self, value: bool) -> None:
+        if self._disqualified or value:
+            self._disqualified = True
+        else:
+            self._disqualified = False
+
+    @property
+    def score(self) -> int:
+        return self._score
+
+
+class Pair(BasePair):
+    @register_scoring_method
+    def _score_skill(self, candidate: C, role: R) -> None:
+        if role.secondary_focus == candidate.last_role_secondary_skill:
+            self._score -= 5
+        bonus = self.scoring_weights["skill"]
+        for skill in (candidate.primary_skill, candidate.secondary_skill):
+            for focus in (role.skill_focus, role.secondary_focus):
+                if skill == focus:
+                    self._score += bonus
+                bonus -= 5
