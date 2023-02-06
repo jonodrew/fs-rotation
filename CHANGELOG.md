@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - calculating a score for a role that offers "ALL" skills has changed, and now offers X points
 
+## [0.9.0] - 2023-02-06
+### Changed
+- so much has changed. The API of `Pair` has changed significantly, but because I've not yet put out a stable
+  version I am happy leaving this as a minor version. It will also show me who else is using this library and
+  whether they're reading the changelog
+- `Pair` no longer takes a candidate and role when instantiated. Instead, those are passed to `score_pair`, which
+  renders the name `Pair` slightly moot. This is because naming things is hard.
+
 ## [0.8.0] - 2023-01-31
 - Welcome back!
 ### Changed

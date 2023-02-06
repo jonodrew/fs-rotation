@@ -12,7 +12,8 @@ from typing import (
 )
 from munkres import DISALLOWED, make_cost_matrix, Munkres
 
-from fast_stream_22.matching.models import Candidate, Role, Pair, BaseClass
+from fast_stream_22.matching.models import Candidate, Role, BaseClass
+from fast_stream_22.matching.pair import Pair, R, C
 import numpy as np
 
 
@@ -213,7 +214,7 @@ class Process:
                 (
                     candidate_id,
                     role_id,
-                    Pair(self.candidate_mapping[candidate_id], role).score_pair(),
+                    Pair().score_pair(self.candidate_mapping[candidate_id], role),
                 )
             )
 
@@ -229,7 +230,7 @@ class Matching:
         self.candidates = candidates
         self.roles = roles
         self.pairs = [
-            self._score_or_disqualify(Pair(c, r)) for c in candidates for r in roles
+            self._score_or_disqualify(Pair(), c, r) for c in candidates for r in roles
         ]
         self.score_grid = np.reshape(self.pairs, (len(candidates), len(roles)))
 
@@ -248,8 +249,8 @@ class Matching:
         return rejects
 
     @staticmethod
-    def _score_or_disqualify(p: Pair) -> Union[DISALLOWED, int]:
-        p.score_pair()
+    def _score_or_disqualify(p: Pair, candidate: C, role: R) -> Union[DISALLOWED, int]:
+        p.score_pair(candidate, role)
         if p.disqualified:
             return DISALLOWED
         else:
