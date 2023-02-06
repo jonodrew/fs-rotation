@@ -24,7 +24,7 @@ class BasePair:
                 cls.scoring_method_names.add(name)
         super().__init_subclass__()
 
-    def __init__(self, candidate: C, role: R):
+    def __init__(self, candidate: C = None, role: R = None):
         self.candidate = candidate
         self.role = role
         self._score: int = 0
@@ -39,7 +39,7 @@ class BasePair:
         """
         return {getattr(self, name) for name in self.scoring_method_names}
 
-    def score_pair(self, candidate=None, role=None) -> int:
+    def score_pair(self, candidate: C, role: R) -> int:
         """
         Run through the scoring methods for this class
 
@@ -48,7 +48,7 @@ class BasePair:
         :return: an int representing the final score for this Pair
         """
         for method in self.scoring_methods:
-            method(self.candidate, self.role)
+            method(candidate, role)
         self._check_score()
         return self._score
 
