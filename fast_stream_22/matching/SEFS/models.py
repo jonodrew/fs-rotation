@@ -33,9 +33,6 @@ class SefsRole(Role):
 
 
 class SefsPair(BasePair):
-    def __init__(self, c: SefsCandidate, r: SefsRole):
-        super().__init__(c, r)
-
     @register_scoring_method
     def _score_skill(self, candidate: SefsCandidate, role: SefsRole) -> None:
         for skill, level in role.skills.items():
