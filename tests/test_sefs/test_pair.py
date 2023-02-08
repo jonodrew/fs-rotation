@@ -61,3 +61,18 @@ class TestScoreSkill:
         p._score_skill(sefs_candidate, sefs_role)
 
         assert p.score == 10
+
+    def test_when_skill_score_is_zero_and_year_group_is_gt_one_pair_disqualified(
+        self, sefs_candidate, sefs_role
+    ):
+        sefs_candidate.year_group = 2
+
+        sefs_role.skills["Building and Applying Knowledge"] = "A"
+        sefs_role.skills["Developing the GSE community"] = "A"
+
+        p = SefsPair()
+        assert p.score == 0
+
+        p._score_skill(sefs_candidate, sefs_role)
+
+        assert p.disqualified

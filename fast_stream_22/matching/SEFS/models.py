@@ -60,4 +60,7 @@ class SefsPair(BasePair):
                     skill_score += int(self.scoring_weights["skill"] * valence)
             if role.skills[candidate.not_required_skill] == "P":
                 skill_score = int(skill_score / 2)
-            self._score += skill_score
+            if skill_score == 0:
+                self.disqualified = True
+            else:
+                self._score += skill_score
