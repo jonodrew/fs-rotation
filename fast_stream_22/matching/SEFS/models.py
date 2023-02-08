@@ -24,16 +24,29 @@ class SefsRole(Role):
     ):
         super().__init__(**kwargs)
         self.skills = {
-            "broad_thinking": broad_thinking,
-            "building_applying": building_applying,
-            "communicating": communicating,
-            "oversight": oversight,
-            "developing": developing,
+            "Broad Thinking": broad_thinking,
+            "Building and Applying Knowledge": building_applying,
+            "Communicating Science & Engineering for Government": communicating,
+            "Technical Oversight and Management": oversight,
+            "Developing the GSE community": developing,
         }
 
 
 class SefsPair(BasePair):
     @register_scoring_method
     def _score_skill(self, candidate: SefsCandidate, role: SefsRole) -> None:
-        for skill, level in role.skills.items():
-            pass
+        """
+        This method scores the specifics of the SEFS specialism
+
+        :param candidate:
+        :param role:
+        :return:
+        """
+        skills_valence_map: dict[str, float] = {
+            candidate.primary_skill: 1.0,
+            candidate.secondary_skill: 0.8,
+        }
+        if not candidate.year_group == 1:
+            for skill, valence in skills_valence_map.items():
+                if role.skills[skill] == "P":
+                    self._score += int(self.scoring_weights["skill"] * valence)
