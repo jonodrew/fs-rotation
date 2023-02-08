@@ -4,6 +4,13 @@ from fast_stream_22.matching import Role, Candidate
 from fast_stream_22.matching.pair import register_scoring_method, BasePair
 
 Level = Literal["P", "A", "N"]
+Skills = Literal[
+    "Broad Thinking",
+    "Building and Applying Knowledge",
+    "Communicating Science & Engineering for Government",
+    "Technical Oversight and Management",
+    "Developing the GSE community",
+]
 
 
 class SefsCandidate(Candidate):
@@ -47,6 +54,10 @@ class SefsPair(BasePair):
             candidate.secondary_skill: 0.8,
         }
         if not candidate.year_group == 1:
+            skill_score = 0
             for skill, valence in skills_valence_map.items():
                 if role.skills[skill] == "P":
-                    self._score += int(self.scoring_weights["skill"] * valence)
+                    skill_score += int(self.scoring_weights["skill"] * valence)
+            if role.skills[candidate.not_required_skill] == "P":
+                skill_score = int(skill_score / 2)
+            self._score += skill_score
