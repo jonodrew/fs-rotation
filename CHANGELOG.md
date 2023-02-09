@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - calculating a score for a role that offers "ALL" skills has changed, and now offers X points
 
+## [0.10.0] - 2023-02-09
+## Added
+- This adds support for the particulars of scoring the SEFS specialism
+
 ## [0.9.0] - 2023-02-06
 ### Changed
 - so much has changed. The API of `Pair` has changed significantly, but because I've not yet put out a stable
