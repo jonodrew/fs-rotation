@@ -7,5 +7,6 @@ def test_conduct_matching():
         "CML/2022-11-21 - CML - roles.csv",
         "CML/2022-11-21 - CML - candidates.csv",
         senior_first=True,
+        specialism=None,
     )
     assert True

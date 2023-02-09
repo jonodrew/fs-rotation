@@ -4,6 +4,13 @@ from fast_stream_22.matching import Role, Candidate
 from fast_stream_22.matching.pair import register_scoring_method, BasePair
 
 Level = Literal["P", "A", "N"]
+Skills = Literal[
+    "Broad Thinking",
+    "Building and Applying Knowledge",
+    "Communicating Science & Engineering for Government",
+    "Technical Oversight and Management",
+    "Developing the GSE community",
+]
 
 
 class SefsCandidate(Candidate):
@@ -24,19 +31,36 @@ class SefsRole(Role):
     ):
         super().__init__(**kwargs)
         self.skills = {
-            "broad_thinking": broad_thinking,
-            "building_applying": building_applying,
-            "communicating": communicating,
-            "oversight": oversight,
-            "developing": developing,
+            "Broad Thinking": broad_thinking,
+            "Building and Applying Knowledge": building_applying,
+            "Communicating Science & Engineering for Government": communicating,
+            "Technical Oversight and Management": oversight,
+            "Developing the GSE community": developing,
         }
 
 
 class SefsPair(BasePair):
-    def __init__(self, c: SefsCandidate, r: SefsRole):
-        super().__init__(c, r)
-
     @register_scoring_method
     def _score_skill(self, candidate: SefsCandidate, role: SefsRole) -> None:
-        for skill, level in role.skills.items():
-            pass
+        """
+        This method scores the specifics of the SEFS specialism
+
+        :param candidate:
+        :param role:
+        :return:
+        """
+        skills_valence_map: dict[str, float] = {
+            candidate.primary_skill: 1.0,
+            candidate.secondary_skill: 0.8,
+        }
+        if not candidate.year_group == 1:
+            skill_score = 0
+            for skill, valence in skills_valence_map.items():
+                if role.skills[skill] == "P":
+                    skill_score += int(self.scoring_weights["skill"] * valence)
+            if role.skills[candidate.not_required_skill] == "P":
+                skill_score = int(skill_score / 2)
+            if skill_score == 0:
+                self.disqualified = True
+            else:
+                self._score += skill_score

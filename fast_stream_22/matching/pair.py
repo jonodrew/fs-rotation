@@ -1,4 +1,4 @@
-from typing import Callable, TypeVar
+from typing import Callable, TypeVar, Generic
 
 from fast_stream_22.matching.models import Candidate, Role
 
@@ -15,7 +15,7 @@ def register_scoring_method(
     return func
 
 
-class BasePair:
+class BasePair(Generic[C, R]):
     scoring_method_names: set[str] = set()
 
     def __init_subclass__(cls, **kwargs):
@@ -151,6 +151,10 @@ class BasePair:
     @property
     def score(self) -> int:
         return self._score
+
+    @register_scoring_method
+    def _score_skill(self, candidate: C, role: R) -> None:
+        ...
 
 
 class Pair(BasePair):
