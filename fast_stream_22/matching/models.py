@@ -86,7 +86,7 @@ class Candidate(BaseClass):
         self.can_relocate = json.loads(can_relocate.lower())
         self.first_preference_location = first_location_preference
         self.second_preference_location = second_location_preference
-        self.year_group = int(year_group)
+        self.year_group = year_group
         self.prior_departments = set(
             map(self._stringify_department, prior_departments.split(","))
         )
@@ -101,6 +101,14 @@ class Candidate(BaseClass):
         self.has_passport = json.loads(has_passport.lower())
         self.last_role_main_skill = last_role_main_skill
         self.last_role_secondary_skill = last_role_secondary_skill
+
+    @property
+    def year_group(self):
+        return self._year_group
+
+    @year_group.setter
+    def year_group(self, year_group: str):
+        self._year_group = int(year_group)
 
 
 class Role(BaseClass):

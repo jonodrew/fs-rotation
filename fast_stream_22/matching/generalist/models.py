@@ -31,6 +31,17 @@ class GeneralistCandidate(Candidate):
             ]
         ]
 
+    @property
+    def year_group(self):
+        return super().year_group()
+
+    @year_group.setter
+    def year_group(self, year_group: str):
+        if year_group.endswith("m"):
+            pass
+        else:
+            super().year_group(year_group)
+
 
 class GeneralistRole(Role):
     ...
