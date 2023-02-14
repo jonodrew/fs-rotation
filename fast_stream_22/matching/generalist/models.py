@@ -30,17 +30,19 @@ class GeneralistCandidate(Candidate):
                 dept_pref_5,
             ]
         ]
+        self.secondment = False
 
     @property
-    def year_group(self):
-        return super().year_group()
+    def year_group(self) -> int:
+        return self._year_group
 
     @year_group.setter
-    def year_group(self, year_group: str):
+    def year_group(self, year_group: str) -> None:
         if year_group.endswith("m"):
-            pass
+            self.secondment = True
+            self._year_group = 2
         else:
-            super().year_group(year_group)
+            self._year_group = int(year_group)
 
 
 class GeneralistRole(Role):
