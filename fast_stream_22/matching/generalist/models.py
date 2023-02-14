@@ -1,27 +1,6 @@
-import functools
-from enum import IntEnum
-
 from fast_stream_22.matching import BasePair, Candidate, Role
+from fast_stream_22.matching.models import Travel
 from fast_stream_22.matching.pair import register_scoring_method
-
-
-class Travel(IntEnum):
-    NO_TRAVEL = 1
-    LOCAL = 2
-    NATIONAL = 3
-
-    @classmethod
-    @functools.lru_cache
-    def factory(cls, travel: str):
-        mapping = {
-            "I can travel nationally": cls.NATIONAL,
-            "I can travel locally, within the same region": cls.LOCAL,
-            "I'm unable to travel regularly": cls.NO_TRAVEL,
-            "Outside Region": cls.NATIONAL,
-            "Within Region": cls.LOCAL,
-            "None": cls.NO_TRAVEL,
-        }
-        return mapping[travel]
 
 
 class GeneralistCandidate(Candidate):
@@ -87,3 +66,27 @@ class GeneralistPair(BasePair):
     ) -> None:
         self.disqualified = candidate.secondment ^ role.secondment
         super()._appropriate_for_year_group(candidate, role)
+
+    @register_scoring_method
+    def _check_travel(self, c: GeneralistCandidate, r: GeneralistRole) -> None:
+        """
+        Disqualify candidates whose travel requirements don't match those in the role
+
+        :param c: the Candidate
+        :param r: the Role
+        :return: None
+        """
+        self.disqualified = r.travel_requirements > c.travel_requirements
+
+    @register_scoring_method
+    def _check_prior_departments(
+        self, c: GeneralistCandidate, r: GeneralistRole
+    ) -> None:
+        """
+        In the Generalist scheme, candidates are disqualified from visiting a department they've previously visited
+
+        :param c: the Candidate
+        :param r: the Role
+        :return: None
+        """
+        self.disqualified = r.department in c.prior_departments

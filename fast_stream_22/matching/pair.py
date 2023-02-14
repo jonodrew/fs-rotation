@@ -19,6 +19,7 @@ class BasePair(Generic[C, R]):
     scoring_method_names: set[str] = set()
 
     def __init_subclass__(cls, **kwargs):
+        cls.scoring_method_names = set()
         for name in dir(cls):
             if getattr(getattr(cls, name), "_is_scoring_method", False):
                 cls.scoring_method_names.add(name)
@@ -151,10 +152,6 @@ class BasePair(Generic[C, R]):
     @property
     def score(self) -> int:
         return self._score
-
-    @register_scoring_method
-    def _score_skill(self, candidate: C, role: R) -> None:
-        ...
 
 
 class Pair(BasePair):
