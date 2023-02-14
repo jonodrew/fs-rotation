@@ -2,7 +2,10 @@ import csv
 from functools import partial
 
 import click
+
+from fast_stream_22.matching.generalist.models import GeneralistPair
 from fast_stream_22.matching.match import Process, Bid
+from fast_stream_22.matching.pair import Pair
 from fast_stream_22.matching.read_in import read_candidates, read_roles
 import time
 
@@ -38,6 +41,7 @@ def conduct_matching(
     senior_first: bool,
     specialism: str,
 ):
+    specialisms = {"generalist": GeneralistPair}
     dept_bids = []
     with open(bid_file) as bids_file:
         bids_reader = csv.reader(bids_file)
@@ -50,6 +54,7 @@ def conduct_matching(
         read_roles(role_file, specialism),
         dept_bids,
         senior_first,
+        pair_type=specialisms.get(specialism, Pair),
     )
     process_obj.compute()
     return process_obj.pairings

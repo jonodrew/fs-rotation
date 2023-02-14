@@ -9,11 +9,12 @@ from typing import (
     Union,
     TypeVar,
     Optional,
+    Type,
 )
 from munkres import DISALLOWED, make_cost_matrix, Munkres
 
 from fast_stream_22.matching.models import Candidate, Role, BaseClass
-from fast_stream_22.matching.pair import Pair, R, C
+from fast_stream_22.matching.pair import Pair, R, C, P
 import numpy as np
 
 
@@ -46,6 +47,7 @@ class Process:
         all_roles: Sequence[Role],
         bids: Sequence[Bid],
         senior_to_junior: bool = False,
+        pair_type: Type[P] = Pair,  # type: ignore
     ):
         self._all_candidates = all_candidates
         self.candidate_mapping: dict[str, Candidate] = {
@@ -57,6 +59,7 @@ class Process:
         self.pairings: dict[int, list[Result]] = defaultdict(list)
         self.max_rounds = 3
         self.senior_to_junior = senior_to_junior
+        self.specialism = pair_type
 
     def compute(self):
         """
@@ -137,9 +140,8 @@ class Process:
         """
         return [data_point for data_point in data if not data_point.paired]
 
-    @staticmethod
     def pair_off(
-        candidates: Sequence[Candidate], roles: Sequence[Role]
+        self, candidates: Sequence[Candidate], roles: Sequence[Role]
     ) -> list[tuple[str, str]]:
         """
         Create a round of Matching, compute it, and return the pairs
@@ -148,7 +150,7 @@ class Process:
         :param roles: the potential set of roles
         :return: a list of paired candidate/role
         """
-        return Matching(candidates, roles).report_pairs()
+        return Matching(candidates, roles, self.specialism).report_pairs()
 
     @functools.lru_cache
     def _cohort_bids(self, cohort: int) -> dict[str, Bid]:
@@ -200,7 +202,7 @@ class Process:
                 map(lambda bid: bid.count >= bid.min_number, cohort_bids.values())
             )
         candidates, shortlisted_roles = self._prepare_round(cohort, round_number)
-        this_round = Matching(candidates, shortlisted_roles)
+        this_round = Matching(candidates, shortlisted_roles, self.specialism)
         if this_round.reject_impossible_roles():
             return self.match_cohort(cohort, round_number)
         pairs = self.pair_off(candidates, shortlisted_roles)
@@ -226,11 +228,15 @@ class Process:
 
 
 class Matching:
-    def __init__(self, candidates: Sequence[Candidate], roles: Sequence[Role]):
+    def __init__(
+        self, candidates: Sequence[Candidate], roles: Sequence[Role], pair_type: Type[P]
+    ):
         self.candidates = candidates
         self.roles = roles
         self.pairs = [
-            self._score_or_disqualify(Pair(), c, r) for c in candidates for r in roles
+            self._score_or_disqualify(pair_type(), c, r)
+            for c in candidates
+            for r in roles
         ]
         self.score_grid = np.reshape(self.pairs, (len(candidates), len(roles)))
 
@@ -249,7 +255,7 @@ class Matching:
         return rejects
 
     @staticmethod
-    def _score_or_disqualify(p: Pair, candidate: C, role: R) -> Union[DISALLOWED, int]:
+    def _score_or_disqualify(p: P, candidate: C, role: R) -> Union[DISALLOWED, int]:
         p.score_pair(candidate, role)
         if p.disqualified:
             return DISALLOWED

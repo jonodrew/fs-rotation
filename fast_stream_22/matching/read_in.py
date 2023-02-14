@@ -5,6 +5,10 @@ import functools
 from typing import Sequence, Type, TypeVar, Optional
 
 from fast_stream_22.matching.SEFS.models import SefsRole, SefsCandidate
+from fast_stream_22.matching.generalist.models import (
+    GeneralistCandidate,
+    GeneralistRole,
+)
 from fast_stream_22.matching.models import Candidate, Role, BaseClass
 
 
@@ -12,7 +16,11 @@ from fast_stream_22.matching.models import Candidate, Role, BaseClass
 def read_candidates(
     path_to_csv: str = "./candidates.csv", specialism: str = None
 ) -> Sequence[Candidate]:
-    specialisms = {None: Candidate, "SEFS": SefsCandidate}
+    specialisms = {
+        None: Candidate,
+        "SEFS": SefsCandidate,
+        "generalist": GeneralistCandidate,
+    }
     return _read_and_create_objects(path_to_csv, specialisms[specialism])
 
 
@@ -20,7 +28,7 @@ def read_candidates(
 def read_roles(
     path_to_csv: str = "./roles.csv", specialism: Optional[str] = None
 ) -> Sequence[Role]:
-    specialisms = {"SEFS": SefsRole, None: Role}
+    specialisms = {"SEFS": SefsRole, None: Role, "generalist": GeneralistRole}
     return _read_and_create_objects(path_to_csv, specialisms[specialism])
 
 
