@@ -2,6 +2,7 @@ import functools
 from enum import IntEnum
 
 from fast_stream_22.matching import BasePair, Candidate, Role
+from fast_stream_22.matching.pair import register_scoring_method
 
 
 class Travel(IntEnum):
@@ -21,10 +22,6 @@ class Travel(IntEnum):
             "None": cls.NO_TRAVEL,
         }
         return mapping[travel]
-
-
-class GeneralistPair(BasePair):
-    ...
 
 
 class GeneralistCandidate(Candidate):
@@ -81,3 +78,12 @@ class GeneralistRole(Role):
         super().__init__(**kwargs)
         self.accessibility = accessibility
         self.anchor = anchor
+
+
+class GeneralistPair(BasePair):
+    @register_scoring_method
+    def _appropriate_for_year_group(
+        self, candidate: GeneralistCandidate, role: GeneralistRole
+    ) -> None:
+        self.disqualified = candidate.secondment ^ role.secondment
+        super()._appropriate_for_year_group(candidate, role)
