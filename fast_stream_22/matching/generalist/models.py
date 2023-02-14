@@ -71,4 +71,13 @@ class GeneralistCandidate(Candidate):
 
 
 class GeneralistRole(Role):
-    ...
+    def __init__(self, accessibility: str, anchor: str, **kwargs):
+        self.secondment = False
+        if "6m" in kwargs["suitable_for_year_group"]:
+            self.secondment = True
+            kwargs["suitable_for_year_group"] = kwargs[
+                "suitable_for_year_group"
+            ].replace("6m", "2")
+        super().__init__(**kwargs)
+        self.accessibility = accessibility
+        self.anchor = anchor
