@@ -64,7 +64,7 @@ class GeneralistPair(BasePair):
     def _appropriate_for_year_group(
         self, candidate: GeneralistCandidate, role: GeneralistRole
     ) -> None:
-        self.disqualified = candidate.secondment ^ role.secondment
+        self.disqualified = candidate.secondment and not role.secondment
         super()._appropriate_for_year_group(candidate, role)
 
     @register_scoring_method

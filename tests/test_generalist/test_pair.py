@@ -15,7 +15,7 @@ from fast_stream_22.matching.generalist.models import (
         (True, False, True),
         (True, True, False),
         (False, False, False),
-        (False, True, True),
+        (False, True, False),
     ],
 )
 def test_disqualify_secondment_flag(candidate_secondment, role_secondment, expected):
