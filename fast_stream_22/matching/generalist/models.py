@@ -58,6 +58,7 @@ class GeneralistRole(Role):
         super().__init__(**kwargs)
         self.accessibility = accessibility
         self.anchor = anchor
+        self.secondment_only = self.secondment and len(self.suitable_year_groups) == 1
 
 
 class GeneralistPair(BasePair):
@@ -65,7 +66,9 @@ class GeneralistPair(BasePair):
     def _appropriate_for_year_group(
         self, candidate: GeneralistCandidate, role: GeneralistRole
     ) -> None:
-        self.disqualified = candidate.secondment and not role.secondment
+        self.disqualified = (candidate.secondment and not role.secondment) or (
+            role.secondment_only and not candidate.secondment
+        )
         super()._appropriate_for_year_group(candidate, role)
 
     @register_scoring_method

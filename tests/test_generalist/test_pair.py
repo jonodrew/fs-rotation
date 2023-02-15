@@ -24,6 +24,7 @@ def test_disqualify_secondment_flag(candidate_secondment, role_secondment, expec
     c.secondment = candidate_secondment
     r = MagicMock(GeneralistRole)
     r.secondment = role_secondment
+    r.secondment_only = False
     c.year_group = 2
     r.suitable_year_groups = {2}
     assert not p.disqualified
