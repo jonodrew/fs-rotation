@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import dataclasses
+import datetime
 import functools
 import logging
 import sys
@@ -12,7 +13,7 @@ from typing import (
     Optional,
     Type,
 )
-from munkres import DISALLOWED, make_cost_matrix, Munkres
+from munkres import DISALLOWED, make_cost_matrix, Munkres, UnsolvableMatrix
 
 from fast_stream_22.matching.models import Candidate, Role, BaseClass
 from fast_stream_22.matching.pair import Pair, R, C, P
@@ -190,16 +191,21 @@ class Process:
             )
         return candidates, shortlisted_roles
 
-    def match_cohort(self, cohort: int, round_number: int = 0) -> bool:
+    def match_cohort(
+        self, cohort: int, round_number: int = 0, failures: int = 0
+    ) -> bool:
         """
         This method takes a cohort and tries to match the candidates to potential roles. Where matches are made, bids
         are reduced. This means that once a department has met its quota it no longer gets to put roles in for matching
 
         :param cohort: the year group we're matching
         :param round_number: the number of times we've tried this
+        :param failures: the number of failures from this cohort
         :return: a boolean signifying if we were successful
         """
         cohort_bids = self._cohort_bids(cohort)
+        if failures > 10:
+            raise Exception("Too many failures")
         if round_number >= self.max_rounds:
             logger.info("Too many rounds!")
             return all(
