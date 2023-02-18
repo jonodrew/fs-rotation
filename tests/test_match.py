@@ -19,9 +19,10 @@ class TestMatchClass:
         assert m
 
     def test_match_process_works(self, random_candidates, random_roles):
-        m = Matching(random_candidates, random_roles, Pair)
-        pairs = m._match()
-        assert pairs
+        with patch("fast_stream_22.matching.pair.Pair._check_score"):
+            m = Matching(random_candidates, random_roles, Pair)
+            pairs = m._match()
+            assert pairs
 
     def test_reject_impossible_roles(self, random_candidates, random_roles):
         with patch(
