@@ -12,7 +12,7 @@ from fast_stream_22.matching.generalist.models import (
 @pytest.mark.parametrize(
     ["candidate_secondment", "role_secondment", "expected"],
     [
-        (True, False, True),
+        (True, False, False),
         (True, True, False),
         (False, False, False),
         (False, True, False),

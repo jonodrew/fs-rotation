@@ -50,15 +50,17 @@ class GeneralistCandidate(Candidate):
 class GeneralistRole(Role):
     def __init__(self, accessibility: str, anchor: str, **kwargs):
         self.secondment = False
+        self.secondment_only = False
         if "6m" in kwargs["suitable_for_year_group"]:
             self.secondment = True
-            kwargs["suitable_for_year_group"] = kwargs[
-                "suitable_for_year_group"
-            ].replace("6m", "2")
+            if kwargs["suitable_for_year_group"] == "6m":
+                self.secondment_only = True
+        kwargs["suitable_for_year_group"] = kwargs["suitable_for_year_group"].replace(
+            "6m", "2"
+        )
         super().__init__(**kwargs)
         self.accessibility = accessibility
         self.anchor = anchor
-        self.secondment_only = self.secondment and len(self.suitable_year_groups) == 1
 
 
 class GeneralistPair(BasePair):
