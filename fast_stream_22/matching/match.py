@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import dataclasses
 import functools
+import logging
 import sys
 from collections import defaultdict
 from typing import (
@@ -16,6 +17,8 @@ from munkres import DISALLOWED, make_cost_matrix, Munkres
 from fast_stream_22.matching.models import Candidate, Role, BaseClass
 from fast_stream_22.matching.pair import Pair, R, C, P
 import numpy as np
+
+logger = logging.getLogger(__name__)
 
 
 @dataclasses.dataclass
@@ -73,9 +76,9 @@ class Process:
         )
         for cohort in cohorts:
             if self.match_cohort(cohort):
-                print(f"Successfully matched cohort {cohort}")
+                logger.info(f"Successfully matched cohort {cohort}")
             else:
-                print(f"Could not match cohort {cohort}")
+                logger.info(f"Cohort {cohort} could not be perfectly matched")
             self.reset_roles()
         total_bids = 0
         total_count = 0
@@ -84,15 +87,15 @@ class Process:
             dept_bids_mapping[bid.department].append(bid)
             total_bids += bid.number
         all_min_bids = 0
-        print("bids/count")
+        logger.info("bids/count")
         for dept, bids in dept_bids_mapping.items():
             bids_matches = ",".join([f"{bid.number},{bid.count}" for bid in bids])
-            print(f"{dept},{bids_matches}")
+            logger.info(f"{dept},{bids_matches}")
             min_bids = sum([b.min_number for b in bids])
             all_min_bids += min_bids
             this_count = sum([b.count for b in bids])
             total_count += this_count
-        print(
+        logger.info(
             f"There were {total_bids} bids in total against {total_count} total"
             " candidates"
         )
@@ -198,13 +201,15 @@ class Process:
         """
         cohort_bids = self._cohort_bids(cohort)
         if round_number >= self.max_rounds:
+            logger.info("Too many rounds!")
             return all(
                 map(lambda bid: bid.count >= bid.min_number, cohort_bids.values())
             )
         candidates, shortlisted_roles = self._prepare_round(cohort, round_number)
         this_round = Matching(candidates, shortlisted_roles, self.specialism)
         if this_round.reject_impossible_roles():
-            return self.match_cohort(cohort, round_number)
+            logger.info("Rejected roles")
+            return self.match_cohort(cohort, round_number, failures + 1)
         pairs = self.pair_off(candidates, shortlisted_roles)
         pair_scores: list[Result] = []
         for candidate_id, role_id in pairs:
@@ -251,7 +256,7 @@ class Matching:
             if np.all(column == DISALLOWED):
                 rejects.append(self.roles[i])
                 self.roles[i].no_match = True
-                print(f"No candidate could be found for role {self.roles[i]}")
+                logger.info(f"No candidate could be found for role {self.roles[i]}")
         return rejects
 
     @staticmethod
@@ -273,8 +278,19 @@ class Matching:
         :return: Return a list of tuples, representing the candidate-role pairings
 
         """
-        pairs = self._match()
-        return [self._convert_pair(p) for p in pairs]
+        try:
+            pairs = self._match()
+            return [self._convert_pair(p) for p in pairs]
+        except UnsolvableMatrix:
+            log_copy = self.score_grid.copy()
+            log_copy[log_copy == DISALLOWED] = "D"
+            np.savetxt(
+                f"{datetime.datetime.utcnow()}-log.csv",
+                log_copy,
+                delimiter=",",
+                fmt="%s",
+            )
+            raise UnsolvableMatrix
 
     def _convert_pair(self, pair: tuple[int, int]) -> tuple[str, str]:
         candidate, role = pair
