@@ -194,14 +194,14 @@ i18n = ["Babel (>=2.7)"]
 
 [[package]]
 name = "jk-munkres"
-version = "1.0.0"
+version = "1.2.0"
 description = "A fork of munkres"
 category = "main"
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "jk-munkres-1.0.0.tar.gz", hash = "sha256:26e5d0b17a52d60525d583edc6a02efc7b026d71980204eda4e68ce4e6b72808"},
-    {file = "jk_munkres-1.0.0-py3-none-any.whl", hash = "sha256:df1b1a8d8dccd8a5b068b930072f9e60f0542d39921dada1fac49fc479b7ff0e"},
+    {file = "jk-munkres-1.2.0.tar.gz", hash = "sha256:d62489d9d4f030adb004efe53ff8a4258faf3db4cd9931f9308de71a614cd31f"},
+    {file = "jk_munkres-1.2.0-py3-none-any.whl", hash = "sha256:3377f2550f7ccb14517cea755961bb1c41683ef06532c7bde0618ad378c86895"},
 ]
 
 [package.extras]
