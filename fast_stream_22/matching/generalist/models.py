@@ -33,6 +33,18 @@ class GeneralistCandidate(Candidate):
         ]
         self.secondment = False
         self.travel_requirements: Travel = Travel.factory(travel_requirements)
+        self._fix_previous_departments()
+
+    def _fix_previous_departments(self):
+        """
+        Scottish and Welsh government are so varied that Candidates can visit them again, so we remove them as a 'prior
+        department' if `self.can_relocate` is False
+
+        :return:
+        """
+        if not self.can_relocate:
+            for department in ("wg", "sg"):
+                self.prior_departments.discard(department)
 
     @property
     def year_group(self) -> int:
