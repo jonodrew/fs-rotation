@@ -1,3 +1,5 @@
+import logging
+from functools import wraps
 from typing import Callable, TypeVar, Generic
 
 from fast_stream_22.matching.models import Candidate, Role
@@ -7,12 +9,24 @@ P = TypeVar("P", bound="BasePair")
 C = TypeVar("C", bound=Candidate)
 R = TypeVar("R", bound=Role)
 
+logger = logging.getLogger(__name__)
+
 
 def register_scoring_method(
     func: Callable[[P, C, R], None]
 ) -> Callable[[P, C, R], None]:
     func._is_scoring_method = True  # type: ignore
-    return func
+
+    @wraps(func)
+    def inner(instance: P, candidate: C, role: R) -> None:
+        before = instance.disqualified
+        func(instance, candidate, role)
+        if instance.disqualified is True and before is False:
+            logger.debug(f"{candidate} dq'd from {role} because of {func.__name__}")
+            pass
+        return None
+
+    return inner
 
 
 class BasePair(Generic[C, R]):
