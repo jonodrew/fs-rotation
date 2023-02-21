@@ -4,6 +4,7 @@ import dataclasses
 import datetime
 import functools
 import logging
+import math
 import sys
 from collections import defaultdict
 from typing import (
@@ -33,8 +34,10 @@ class Bid:
     def min_number(self):
         if self.number == 0:
             return 0
+        elif self.number < 10:
+            return int(0.8 * self.number)
         else:
-            return max([int(0.8 * self.number), self.number - 1, 1])
+            return math.floor(self.number * 0.8)
 
     @property
     def department(self):
@@ -61,7 +64,7 @@ class Process:
         self.all_roles_mapping: dict[str, Role] = {r.uid: r for r in all_roles}
         self.bids = bids
         self.pairings: dict[int, list[Result]] = defaultdict(list)
-        self.max_rounds = 3
+        self.max_rounds = 5
         self.senior_to_junior = senior_to_junior
         self.specialism = pair_type
 
@@ -227,7 +230,9 @@ class Process:
                 (
                     candidate_id,
                     role_id,
-                    Pair().score_pair(self.candidate_mapping[candidate_id], role),
+                    self.specialism().score_pair(
+                        self.candidate_mapping[candidate_id], role
+                    ),
                 )
             )
 
@@ -235,6 +240,10 @@ class Process:
         if len(pairs) == len(candidates):
             return True
         else:
+            logger.info(
+                f"Round {round_number} failed. {len(candidates) - len(pairs)} still to"
+                " pair"
+            )
             return self.match_cohort(cohort, round_number + 1)
 
 
