@@ -21,7 +21,7 @@ class GeneralistCandidate(Candidate):
         super().__init__(**kwargs)
         self.primary_anchor = primary_anchor_seeking
         self.secondary_anchor = secondary_anchor_seeking
-        self.dept_prefs = [
+        self.dept_prefs = {
             self._stringify_department(dept)
             for dept in [
                 dept_pref_1,
@@ -30,7 +30,7 @@ class GeneralistCandidate(Candidate):
                 dept_pref_4,
                 dept_pref_5,
             ]
-        ]
+        }
         self.secondment = False
         self.travel_requirements: Travel = Travel.factory(travel_requirements)
         self._fix_previous_departments()
@@ -108,3 +108,10 @@ class GeneralistPair(BasePair):
         :return: None
         """
         self.disqualified = r.department in c.prior_departments
+
+    @register_scoring_method
+    def _score_department(
+        self, candidate: GeneralistCandidate, role: GeneralistRole
+    ) -> None:
+        if role.department in candidate.dept_prefs:
+            self._score += self.scoring_weights["department"]
