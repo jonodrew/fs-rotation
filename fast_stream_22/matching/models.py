@@ -37,7 +37,8 @@ class NationalityRequirement(IntEnum):
 class BaseClass:
     departments: set[str] = set()
 
-    def __init__(self, uid: str, clearance: str):
+    def __init__(self, uid: str, clearance: str, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.uid = uid
         self._clearance = Clearance[clearance]
         self.paired = False
