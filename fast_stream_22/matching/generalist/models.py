@@ -76,6 +76,8 @@ class GeneralistRole(Role):
 
 
 class GeneralistPair(BasePair):
+    scoring_weights = {**BasePair.scoring_weights, "anchor": 15}
+
     @register_scoring_method
     def _appropriate_for_year_group(
         self, candidate: GeneralistCandidate, role: GeneralistRole
@@ -115,3 +117,8 @@ class GeneralistPair(BasePair):
     ) -> None:
         if role.department in candidate.dept_prefs:
             self._score += self.scoring_weights["department"]
+
+    @register_scoring_method
+    def _score_anchor(self, c: GeneralistCandidate, r: GeneralistRole) -> None:
+        if r.anchor in {c.primary_anchor, c.secondary_anchor}:
+            self._score += self.scoring_weights["anchor"]
