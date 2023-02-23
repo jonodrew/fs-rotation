@@ -4,7 +4,6 @@ import dataclasses
 import datetime
 import functools
 import logging
-import math
 import sys
 from collections import defaultdict
 from typing import (
@@ -29,15 +28,16 @@ class Bid:
     _department: str
     number: int = 0
     count: int = 0
+    initial_round_percentage: float = 0.8
 
     @property
     def min_number(self):
-        if self.number == 0:
-            return 0
-        elif self.number < 10:
-            return int(0.8 * self.number)
+        if self.number in {0, 1}:
+            return self.number
+        elif self.number < 5:
+            return self.number - 1
         else:
-            return math.floor(self.number * 0.8)
+            return round(self.number * self.initial_round_percentage)
 
     @property
     def department(self):
