@@ -117,6 +117,7 @@ class Process:
         """
         for r in self._all_roles:
             r.no_match = False
+        logger.info("Roles reset")
 
     @property
     def all_candidates(self) -> list[Candidate]:
@@ -220,9 +221,12 @@ class Process:
                 map(lambda bid: bid.count >= bid.min_number, cohort_bids.values())
             )
         candidates, shortlisted_roles = self._prepare_round(cohort, round_number)
+        if not shortlisted_roles:
+            raise Exception("No roles left to try!")
         this_round = Matching(candidates, shortlisted_roles, self.specialism)
-        if this_round.reject_impossible_roles():
-            logger.info("Rejected roles")
+        if rejects := this_round.reject_impossible_roles():
+            logger.info(f"Attempt #{failures}: Failed to find enough roles")
+            logger.info(f"Rejected following roles: {','.join(map(str, rejects))}")
             return self.match_cohort(cohort, round_number, failures + 1)
         pairs = self.pair_off(candidates, shortlisted_roles)
         pair_scores: list[Result] = []
@@ -247,7 +251,7 @@ class Process:
         else:
             logger.info(
                 f"Round {round_number} failed. {len(candidates) - len(pairs)} still to"
-                " pair"
+                f" pair ({[c for c in candidates if not c.paired]}"
             )
             return self.match_cohort(cohort, round_number + 1)
 
