@@ -1,4 +1,5 @@
 import logging
+import os
 from functools import wraps
 from typing import Callable, TypeVar, Generic
 
@@ -20,10 +21,15 @@ def register_scoring_method(
     @wraps(func)
     def inner(instance: P, candidate: C, role: R) -> None:
         before = instance.disqualified
+        score_before = instance.score
         func(instance, candidate, role)
-        if instance.disqualified is True and before is False:
-            logger.debug(f"{candidate} dq'd from {role} because of {func.__name__}")
-            pass
+        if os.environ.get("DEBUG") == "true":
+            if instance.disqualified is True and before is False:
+                logger.debug(f"{candidate} dq'd from {role} because of {func.__name__}")
+            elif score_before < instance.score:
+                logger.debug(
+                    f"{candidate} scored with {role} thanks to {func.__name__}"
+                )
         return None
 
     return inner
