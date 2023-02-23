@@ -17,6 +17,7 @@ class GeneralistCandidate(Candidate):
         accessibility: str = None,
         **kwargs
     ):
+        self.secondment = False
         kwargs["prior_departments"] = kwargs["prior_departments"].replace(" ", ",")
         super().__init__(**kwargs)
         self.primary_anchor = primary_anchor_seeking
