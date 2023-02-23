@@ -38,6 +38,16 @@ def register_scoring_method(
 class BasePair(Generic[C, R]):
     scoring_method_names: set[str] = set()
 
+    scoring_weights: dict[str, int] = {
+        "first_location": 10,
+        "second_location": 5,
+        "department": 10,
+        "skill": 20,
+        "stretch": 10,
+        "year_appropriate": 5,
+    }
+    min_score: dict[int, int] = {1: 5, 2: 15, 3: 20}
+
     def __init_subclass__(cls, **kwargs):
         cls.scoring_method_names = set()
         for name in dir(cls):
@@ -74,16 +84,6 @@ class BasePair(Generic[C, R]):
                 return self.score
         self._check_score(candidate)
         return self.score
-
-    scoring_weights: dict[str, int] = {
-        "first_location": 10,
-        "second_location": 5,
-        "department": 10,
-        "skill": 20,
-        "stretch": 10,
-        "year_appropriate": 5,
-    }
-    min_score: dict[int, int] = {1: 10, 2: 10, 3: 20}
 
     @register_scoring_method
     def _check_location(self, candidate: C, role: R) -> None:
@@ -185,7 +185,7 @@ class BasePair(Generic[C, R]):
 
         :return:
         """
-        if self.score < self.min_score.get(candidate.year_group, 0):
+        if not self.score >= self.min_score.get(candidate.year_group, 0):
             self.disqualified = True
 
     @property
