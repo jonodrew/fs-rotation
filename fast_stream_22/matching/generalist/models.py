@@ -17,6 +17,7 @@ class GeneralistCandidate(Candidate):
         accessibility: str = None,
         **kwargs
     ):
+        self.secondment = False
         kwargs["prior_departments"] = kwargs["prior_departments"].replace(" ", ",")
         super().__init__(**kwargs)
         self.primary_anchor = primary_anchor_seeking
@@ -31,7 +32,6 @@ class GeneralistCandidate(Candidate):
                 dept_pref_5,
             ]
         }
-        self.secondment = False
         self.travel_requirements: Travel = Travel.factory(travel_requirements)
         self._fix_previous_departments()
 
