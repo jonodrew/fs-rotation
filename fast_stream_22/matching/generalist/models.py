@@ -15,6 +15,8 @@ class GeneralistCandidate(Candidate):
         dept_pref_5: str,
         travel_requirements: str,
         accessibility: str = None,
+        match_pref_1: str = None,
+        match_pref_2: str = None,
         **kwargs
     ):
         self.secondment = False
