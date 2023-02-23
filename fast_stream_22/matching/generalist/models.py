@@ -1,5 +1,5 @@
 from fast_stream_22.matching import BasePair, Candidate, Role
-from fast_stream_22.matching.models import Travel
+from fast_stream_22.matching.models import Travel, Clearance
 from fast_stream_22.matching.pair import register_scoring_method
 
 
@@ -57,6 +57,10 @@ class GeneralistCandidate(Candidate):
             self._year_group = 2
         else:
             self._year_group = int(year_group)
+
+    @property
+    def clearance(self) -> Clearance:
+        return super().clearance if self._clearance != Clearance.DV else Clearance.SC
 
 
 class GeneralistRole(Role):
