@@ -73,6 +73,7 @@ class BasePair(Generic[C, R]):
         "department": 10,
         "skill": 20,
         "stretch": 10,
+        "year_appropriate": 5,
     }
 
     @register_scoring_method
@@ -100,7 +101,7 @@ class BasePair(Generic[C, R]):
             self._score += self.scoring_weights["second_location"]
 
     @register_scoring_method
-    def _score_clearance(self, candidate: C, role: R) -> None:
+    def _check_clearance(self, candidate: C, role: R) -> None:
         self.disqualified = candidate.clearance < role.clearance
 
     @register_scoring_method
@@ -117,31 +118,46 @@ class BasePair(Generic[C, R]):
         self.disqualified = role.passport_requirement and not candidate.has_passport
 
     @register_scoring_method
-    def _score_department(self, candidate: C, role: R) -> None:
-        if role.department not in candidate.prior_departments:
-            self._score += self.scoring_weights["department"]
+    def _check_year_group(self, candidate: C, role: R) -> None:
+        self.disqualified = candidate.year_group not in role.suitable_year_groups
 
     @register_scoring_method
-    def _ethical_check(self, candidate: C, role: R) -> None:
+    def _check_ethics(self, candidate: C, role: R) -> None:
         self.disqualified = (candidate.no_immigration and role.immigration_role) or (
             candidate.no_defence and role.defence_role
         )
 
     @register_scoring_method
-    def _appropriate_for_year_group(self, candidate: C, role: R) -> None:
-        self.disqualified = candidate.year_group not in role.suitable_year_groups
-
-    @register_scoring_method
-    def _stretch_check(self, candidate: C, role: R) -> None:
+    def _check_stretch(self, candidate: C, role: R) -> None:
         if (not candidate.wants_private_office and role.private_office_role) or (
             not candidate.wants_line_management and role.line_management_role
         ):
             self.disqualified = True
-        else:
-            if candidate.wants_private_office and role.private_office_role:
-                self._score += self.scoring_weights["stretch"]
-            if candidate.wants_line_management and role.line_management_role:
-                self._score += self.scoring_weights["stretch"]
+
+    @register_scoring_method
+    def _score_stretch(self, candidate: C, role: R) -> None:
+        if candidate.wants_private_office and role.private_office_role:
+            self._score += self.scoring_weights["stretch"]
+        if candidate.wants_line_management and role.line_management_role:
+            self._score += self.scoring_weights["stretch"]
+
+    @register_scoring_method
+    def _score_year_only(self, candidate: C, role: R) -> None:
+        """
+        If a role is only suitable for one year group, score it more highly
+
+        :param candidate: Candidate
+        :param role: Role
+        :return: None
+        """
+        year_groups = role.suitable_year_groups
+        if len(year_groups) == 1 and candidate.year_group in year_groups:
+            self._score += self.scoring_weights["year_appropriate"]
+
+    @register_scoring_method
+    def _score_department(self, candidate: C, role: R) -> None:
+        if role.department not in candidate.prior_departments:
+            self._score += self.scoring_weights["department"]
 
     def _check_score(self) -> None:
         """

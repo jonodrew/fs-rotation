@@ -79,13 +79,12 @@ class GeneralistPair(BasePair):
     scoring_weights = {**BasePair.scoring_weights, "anchor": 15}
 
     @register_scoring_method
-    def _appropriate_for_year_group(
+    def _check_secondment(
         self, candidate: GeneralistCandidate, role: GeneralistRole
     ) -> None:
         self.disqualified = (candidate.secondment and not role.secondment) or (
             role.secondment_only and not candidate.secondment
         )
-        super()._appropriate_for_year_group(candidate, role)
 
     @register_scoring_method
     def _check_travel(self, c: GeneralistCandidate, r: GeneralistRole) -> None:
