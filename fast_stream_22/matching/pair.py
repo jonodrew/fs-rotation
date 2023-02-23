@@ -168,6 +168,17 @@ class BasePair(Generic[C, R]):
         if role.department not in candidate.prior_departments:
             self._score += self.scoring_weights["department"]
 
+    @register_scoring_method
+    def _score_skill(self, candidate: C, role: R) -> None:
+        if role.secondary_focus == candidate.last_role_secondary_skill:
+            self._score -= 5
+        bonus = self.scoring_weights["skill"]
+        for skill in (candidate.primary_skill, candidate.secondary_skill):
+            for focus in (role.skill_focus, role.secondary_focus):
+                if skill == focus:
+                    self._score += bonus
+                bonus -= 5
+
     def _check_score(self, candidate: C) -> None:
         """
         The lowest acceptable score for a match. If the score is too low, set `self.disqualified` to `True`
@@ -194,13 +205,4 @@ class BasePair(Generic[C, R]):
 
 
 class Pair(BasePair):
-    @register_scoring_method
-    def _score_skill(self, candidate: C, role: R) -> None:
-        if role.secondary_focus == candidate.last_role_secondary_skill:
-            self._score -= 5
-        bonus = self.scoring_weights["skill"]
-        for skill in (candidate.primary_skill, candidate.secondary_skill):
-            for focus in (role.skill_focus, role.secondary_focus):
-                if skill == focus:
-                    self._score += bonus
-                bonus -= 5
+    pass
