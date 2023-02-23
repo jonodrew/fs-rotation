@@ -1,6 +1,10 @@
+from __future__ import annotations
+
+from functools import wraps
+from typing import Callable
 from fast_stream_22.matching import BasePair, Candidate, Role
 from fast_stream_22.matching.models import Travel, Clearance
-from fast_stream_22.matching.pair import register_scoring_method
+from fast_stream_22.matching.pair import register_scoring_method, C, R
 
 
 class GeneralistCandidate(Candidate):
@@ -17,11 +21,12 @@ class GeneralistCandidate(Candidate):
         accessibility: str = None,
         match_pref_1: str = None,
         match_pref_2: str = None,
-        **kwargs
+        **kwargs,
     ):
         self.secondment = False
         kwargs["prior_departments"] = kwargs["prior_departments"].replace(" ", ",")
         super().__init__(**kwargs)
+        self.match_preferences = {match_pref_2, match_pref_1}
         self.primary_anchor = primary_anchor_seeking
         self.secondary_anchor = secondary_anchor_seeking
         self.dept_prefs = {
@@ -81,8 +86,26 @@ class GeneralistRole(Role):
         self.anchor = anchor
 
 
+def register_method_called(
+    func: Callable[["GeneralistPair", C, R], None]
+) -> Callable[["GeneralistPair", C, R], None]:
+    @wraps(func)
+    def _inner(instance: GeneralistPair, candidate: C, role: R) -> None:
+        before_score = instance.score
+        func(instance, candidate, role)
+        if instance.score > before_score:
+            instance.methods_called.add(func.__name__)
+        return None
+
+    return _inner
+
+
 class GeneralistPair(BasePair):
-    scoring_weights = {**BasePair.scoring_weights, "anchor": 15}
+    scoring_weights = {**BasePair.scoring_weights, "anchor": 15, "preference": 10}
+
+    def __init__(self):
+        super().__init__()
+        self.methods_called = set()
 
     @register_scoring_method
     def _check_secondment(
@@ -117,6 +140,7 @@ class GeneralistPair(BasePair):
         self.disqualified = r.department in c.prior_departments
 
     @register_scoring_method
+    @register_method_called
     def _score_department(
         self, candidate: GeneralistCandidate, role: GeneralistRole
     ) -> None:
@@ -124,6 +148,33 @@ class GeneralistPair(BasePair):
             self._score += self.scoring_weights["department"]
 
     @register_scoring_method
+    @register_method_called
     def _score_anchor(self, c: GeneralistCandidate, r: GeneralistRole) -> None:
         if r.anchor in {c.primary_anchor, c.secondary_anchor}:
             self._score += self.scoring_weights["anchor"]
+
+    @register_method_called
+    @register_scoring_method
+    def _score_skill(self, candidate: C, role: R) -> None:
+        return super()._score_skill(candidate, role)
+
+    @register_method_called
+    @register_scoring_method
+    def _score_location(self, candidate: C, role: R) -> None:
+        return super()._score_location(candidate, role)
+
+    def _score_preferences(self, candidate: GeneralistCandidate):
+        preferences = {
+            "Anchor": self._score_anchor.__name__,
+            "Location": self._score_location.__name__,
+            "Department": self._score_department.__name__,
+            "Skill": self._score_skill.__name__,
+        }
+        for preference in candidate.match_preferences:
+            if preferences.get(preference) in self.methods_called:
+                self._score += self.scoring_weights["preference"]
+
+    def score_pair(self, candidate: GeneralistCandidate, role: GeneralistRole) -> int:
+        super().score_pair(candidate, role)
+        self._score_preferences(candidate)
+        return self.score
