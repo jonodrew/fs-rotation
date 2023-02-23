@@ -213,7 +213,7 @@ class Process:
         :return: a boolean signifying if we were successful
         """
         cohort_bids = self._cohort_bids(cohort)
-        if failures > 10:
+        if failures > 20:
             raise Exception("Too many failures")
         if round_number >= self.max_rounds:
             logger.info("Too many rounds!")
