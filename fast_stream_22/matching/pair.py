@@ -70,8 +70,10 @@ class BasePair(Generic[C, R]):
         """
         for method in self.scoring_methods:
             method(candidate, role)
+            if self.disqualified:
+                return self.score
         self._check_score()
-        return self._score
+        return self.score
 
     scoring_weights: dict[str, int] = {
         "first_location": 10,
