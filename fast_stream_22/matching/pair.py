@@ -72,7 +72,7 @@ class BasePair(Generic[C, R]):
             method(candidate, role)
             if self.disqualified:
                 return self.score
-        self._check_score()
+        self._check_score(candidate)
         return self.score
 
     scoring_weights: dict[str, int] = {
@@ -83,6 +83,7 @@ class BasePair(Generic[C, R]):
         "stretch": 10,
         "year_appropriate": 5,
     }
+    min_score: dict[int, int] = {1: 10, 2: 10, 3: 20}
 
     @register_scoring_method
     def _check_location(self, candidate: C, role: R) -> None:
@@ -167,13 +168,13 @@ class BasePair(Generic[C, R]):
         if role.department not in candidate.prior_departments:
             self._score += self.scoring_weights["department"]
 
-    def _check_score(self) -> None:
+    def _check_score(self, candidate: C) -> None:
         """
         The lowest acceptable score for a match. If the score is too low, set `self.disqualified` to `True`
 
         :return:
         """
-        if self.score < 20:
+        if self.score < self.min_score.get(candidate.year_group, 0):
             self.disqualified = True
 
     @property
