@@ -29,9 +29,9 @@ def process_matches(
     )
     for cohort in cohort_pairings.values():
         for pair in cohort:
-            print(pair[0], pair[1], pair[2])
+            click.echo(f"{','.join(map(str, pair))}")
     end = time.time()
-    print(f"Task completed in {(end-start)*1000} milliseconds")
+    click.echo(f"Task completed in {(end-start)*1000} ms")
 
 
 def conduct_matching(

@@ -96,15 +96,15 @@ class Process:
             dept_bids_mapping[bid.department].append(bid)
             total_bids += bid.number
         all_min_bids = 0
-        logger.info("bids/count")
+        print("bids/count")
         for dept, bids in dept_bids_mapping.items():
             bids_matches = ",".join([f"{bid.number},{bid.count}" for bid in bids])
-            logger.info(f"{dept},{bids_matches}")
+            print(f"{dept},{bids_matches}")
             min_bids = sum([b.min_number for b in bids])
             all_min_bids += min_bids
             this_count = sum([b.count for b in bids])
             total_count += this_count
-        logger.info(
+        print(
             f"There were {total_bids} bids in total against {total_count} total"
             " candidates"
         )
