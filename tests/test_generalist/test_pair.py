@@ -28,5 +28,5 @@ def test_disqualify_secondment_flag(candidate_secondment, role_secondment, expec
     c.year_group = 2
     r.suitable_year_groups = {2}
     assert not p.disqualified
-    p._appropriate_for_year_group(c, r)
+    p._check_year_group(c, r)
     assert p.disqualified is expected
