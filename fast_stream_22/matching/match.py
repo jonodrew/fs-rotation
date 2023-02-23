@@ -68,6 +68,15 @@ class Process:
         self.senior_to_junior = senior_to_junior
         self.specialism = pair_type
 
+    def _compute_cohort(self, cohort: int):
+        if self.match_cohort(cohort):
+            logger.info(f"Successfully matched cohort {cohort}")
+        else:
+            logger.info(f"Cohort {cohort} could not be perfectly matched")
+        self.reset_roles()
+        for pair in self.pairings[cohort]:
+            logger.info(f"{','.join(map(str, pair))}")
+
     def compute(self):
         """
         Try to solve each cohort in turn. The order is defined in self.senior_to_junior. When finished, unmark any roles
@@ -79,11 +88,7 @@ class Process:
             set((bid.cohort for bid in self.bids)), reverse=self.senior_to_junior
         )
         for cohort in cohorts:
-            if self.match_cohort(cohort):
-                logger.info(f"Successfully matched cohort {cohort}")
-            else:
-                logger.info(f"Cohort {cohort} could not be perfectly matched")
-            self.reset_roles()
+            self._compute_cohort(cohort)
         total_bids = 0
         total_count = 0
         dept_bids_mapping = defaultdict(list)
