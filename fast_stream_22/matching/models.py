@@ -139,7 +139,7 @@ class Role(BaseClass):
             uuid,
             clearance_required,
         )
-        self.nationality_requirement = NationalityRequirement[
+        self._nationality_requirement = NationalityRequirement[
             nationality_requirement.replace(" ", "_").upper()
         ]
         self.passport_requirement = json.loads(passport_requirement.lower())
@@ -165,6 +165,13 @@ class Role(BaseClass):
 
     def from_anywhere(self) -> bool:
         return not {"Available Nationally", "Remote"}.isdisjoint(self.locations)
+
+    @property
+    def nationality_requirement(self) -> NationalityRequirement:
+        if self.clearance_required == Clearance.BPSS:
+            return NationalityRequirement.NO_RESTRICTION
+        else:
+            return self._nationality_requirement
 
 
 class Travel(IntEnum):
