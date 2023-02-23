@@ -34,7 +34,6 @@ class GeneralistCandidate(Candidate):
                 dept_pref_5,
             ]
         }
-        self.secondment = False
         self.travel_requirements: Travel = Travel.factory(travel_requirements)
         self._fix_previous_departments()
 
