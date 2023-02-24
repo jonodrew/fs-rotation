@@ -1,3 +1,4 @@
+import functools
 from enum import IntEnum
 from typing import Literal, Optional
 import json
@@ -36,7 +37,8 @@ class NationalityRequirement(IntEnum):
 class BaseClass:
     departments: set[str] = set()
 
-    def __init__(self, uid: str, clearance: str):
+    def __init__(self, uid: str, clearance: str, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.uid = uid
         self._clearance = Clearance[clearance]
         self.paired = False
@@ -86,7 +88,7 @@ class Candidate(BaseClass):
         self.can_relocate = json.loads(can_relocate.lower())
         self.first_preference_location = first_location_preference
         self.second_preference_location = second_location_preference
-        self.year_group = int(year_group)
+        self.year_group = year_group
         self.prior_departments = set(
             map(self._stringify_department, prior_departments.split(","))
         )
@@ -101,6 +103,14 @@ class Candidate(BaseClass):
         self.has_passport = json.loads(has_passport.lower())
         self.last_role_main_skill = last_role_main_skill
         self.last_role_secondary_skill = last_role_secondary_skill
+
+    @property
+    def year_group(self):
+        return self._year_group
+
+    @year_group.setter
+    def year_group(self, year_group: str):
+        self._year_group = int(year_group)
 
 
 class Role(BaseClass):
@@ -119,8 +129,8 @@ class Role(BaseClass):
         private_office_role: StrBool,
         line_management_role: StrBool,
         office_arrangement: str,
-        travel_requirements: str,
         defence_role: StrBool,
+        travel_requirements: str,
         immigration_role: StrBool,
         skill_focus: str,
         secondary_focus: str,
@@ -129,7 +139,7 @@ class Role(BaseClass):
             uuid,
             clearance_required,
         )
-        self.nationality_requirement = NationalityRequirement[
+        self._nationality_requirement = NationalityRequirement[
             nationality_requirement.replace(" ", "_").upper()
         ]
         self.passport_requirement = json.loads(passport_requirement.lower())
@@ -142,7 +152,7 @@ class Role(BaseClass):
         self.private_office_role = json.loads(private_office_role.lower())
         self.line_management_role = json.loads(line_management_role.lower())
         self.office_arrangements = office_arrangement
-        self.travel_requirements = travel_requirements
+        self.travel_requirements = Travel.factory(travel_requirements)
         self.defence_role = json.loads(defence_role.lower())
         self.immigration_role = json.loads(immigration_role.lower())
         self.skill_focus = skill_focus
@@ -155,3 +165,29 @@ class Role(BaseClass):
 
     def from_anywhere(self) -> bool:
         return not {"Available Nationally", "Remote"}.isdisjoint(self.locations)
+
+    @property
+    def nationality_requirement(self) -> NationalityRequirement:
+        if self.clearance_required == Clearance.BPSS:
+            return NationalityRequirement.NO_RESTRICTION
+        else:
+            return self._nationality_requirement
+
+
+class Travel(IntEnum):
+    NO_TRAVEL = 1
+    LOCAL = 2
+    NATIONAL = 3
+
+    @classmethod
+    @functools.lru_cache
+    def factory(cls, travel: str) -> "Travel":
+        mapping = {
+            "I can travel nationally": cls.NATIONAL,
+            "I can travel locally, within the same region": cls.LOCAL,
+            "I'm unable to travel regularly": cls.NO_TRAVEL,
+            "Outside Region": cls.NATIONAL,
+            "Within Region": cls.LOCAL,
+            "None": cls.NO_TRAVEL,
+        }
+        return mapping[travel]

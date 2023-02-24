@@ -84,7 +84,7 @@ def random_role_dict():
             "private_office_role": False,
             "line_management_role": False,
             "office_arrangement": "",
-            "travel_requirements": "",
+            "travel_requirements": "Outside Region",
             "defence_role": False,
             "immigration_role": False,
             "skill_focus": random.choice(skills),

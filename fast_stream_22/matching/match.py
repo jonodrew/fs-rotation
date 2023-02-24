@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import dataclasses
+import datetime
 import functools
+import logging
 import sys
 from collections import defaultdict
 from typing import (
@@ -9,12 +11,15 @@ from typing import (
     Union,
     TypeVar,
     Optional,
+    Type,
 )
-from munkres import DISALLOWED, make_cost_matrix, Munkres
+from munkres import DISALLOWED, make_cost_matrix, Munkres, UnsolvableMatrix
 
 from fast_stream_22.matching.models import Candidate, Role, BaseClass
-from fast_stream_22.matching.pair import Pair, R, C
+from fast_stream_22.matching.pair import Pair, R, C, P
 import numpy as np
+
+logger = logging.getLogger(__name__)
 
 
 @dataclasses.dataclass
@@ -23,13 +28,16 @@ class Bid:
     _department: str
     number: int = 0
     count: int = 0
+    initial_round_percentage: float = 0.8
 
     @property
     def min_number(self):
-        if self.number == 0:
-            return 0
+        if self.number in {0, 1}:
+            return self.number
+        elif self.number < 5:
+            return self.number - 1
         else:
-            return max([int(0.8 * self.number), self.number - 1, 1])
+            return round(self.number * self.initial_round_percentage)
 
     @property
     def department(self):
@@ -46,6 +54,7 @@ class Process:
         all_roles: Sequence[Role],
         bids: Sequence[Bid],
         senior_to_junior: bool = False,
+        pair_type: Type[P] = Pair,  # type: ignore
     ):
         self._all_candidates = all_candidates
         self.candidate_mapping: dict[str, Candidate] = {
@@ -55,8 +64,18 @@ class Process:
         self.all_roles_mapping: dict[str, Role] = {r.uid: r for r in all_roles}
         self.bids = bids
         self.pairings: dict[int, list[Result]] = defaultdict(list)
-        self.max_rounds = 3
+        self.max_rounds = 5
         self.senior_to_junior = senior_to_junior
+        self.specialism = pair_type
+
+    def _compute_cohort(self, cohort: int):
+        if self.match_cohort(cohort):
+            logger.info(f"Successfully matched cohort {cohort}")
+        else:
+            logger.info(f"Cohort {cohort} could not be perfectly matched")
+        self.reset_roles()
+        for pair in self.pairings[cohort]:
+            logger.info(f"{','.join(map(str, pair))}")
 
     def compute(self):
         """
@@ -69,11 +88,7 @@ class Process:
             set((bid.cohort for bid in self.bids)), reverse=self.senior_to_junior
         )
         for cohort in cohorts:
-            if self.match_cohort(cohort):
-                print(f"Successfully matched cohort {cohort}")
-            else:
-                print(f"Could not match cohort {cohort}")
-            self.reset_roles()
+            self._compute_cohort(cohort)
         total_bids = 0
         total_count = 0
         dept_bids_mapping = defaultdict(list)
@@ -102,6 +117,7 @@ class Process:
         """
         for r in self._all_roles:
             r.no_match = False
+        logger.info("Roles reset")
 
     @property
     def all_candidates(self) -> list[Candidate]:
@@ -137,9 +153,8 @@ class Process:
         """
         return [data_point for data_point in data if not data_point.paired]
 
-    @staticmethod
     def pair_off(
-        candidates: Sequence[Candidate], roles: Sequence[Role]
+        self, candidates: Sequence[Candidate], roles: Sequence[Role]
     ) -> list[tuple[str, str]]:
         """
         Create a round of Matching, compute it, and return the pairs
@@ -148,7 +163,7 @@ class Process:
         :param roles: the potential set of roles
         :return: a list of paired candidate/role
         """
-        return Matching(candidates, roles).report_pairs()
+        return Matching(candidates, roles, self.specialism).report_pairs()
 
     @functools.lru_cache
     def _cohort_bids(self, cohort: int) -> dict[str, Bid]:
@@ -185,24 +200,34 @@ class Process:
             )
         return candidates, shortlisted_roles
 
-    def match_cohort(self, cohort: int, round_number: int = 0) -> bool:
+    def match_cohort(
+        self, cohort: int, round_number: int = 0, failures: int = 0
+    ) -> bool:
         """
         This method takes a cohort and tries to match the candidates to potential roles. Where matches are made, bids
         are reduced. This means that once a department has met its quota it no longer gets to put roles in for matching
 
         :param cohort: the year group we're matching
         :param round_number: the number of times we've tried this
+        :param failures: the number of failures from this cohort
         :return: a boolean signifying if we were successful
         """
         cohort_bids = self._cohort_bids(cohort)
+        if failures > 20:
+            raise Exception("Too many failures")
         if round_number >= self.max_rounds:
+            logger.info("Too many rounds!")
             return all(
                 map(lambda bid: bid.count >= bid.min_number, cohort_bids.values())
             )
         candidates, shortlisted_roles = self._prepare_round(cohort, round_number)
-        this_round = Matching(candidates, shortlisted_roles)
-        if this_round.reject_impossible_roles():
-            return self.match_cohort(cohort, round_number)
+        if not shortlisted_roles:
+            raise Exception("No roles left to try!")
+        this_round = Matching(candidates, shortlisted_roles, self.specialism)
+        if rejects := this_round.reject_impossible_roles():
+            logger.info(f"Attempt #{failures}: Failed to find enough roles")
+            logger.info(f"Rejected following roles: {','.join(map(str, rejects))}")
+            return self.match_cohort(cohort, round_number, failures + 1)
         pairs = self.pair_off(candidates, shortlisted_roles)
         pair_scores: list[Result] = []
         for candidate_id, role_id in pairs:
@@ -214,7 +239,9 @@ class Process:
                 (
                     candidate_id,
                     role_id,
-                    Pair().score_pair(self.candidate_mapping[candidate_id], role),
+                    self.specialism().score_pair(
+                        self.candidate_mapping[candidate_id], role
+                    ),
                 )
             )
 
@@ -222,15 +249,23 @@ class Process:
         if len(pairs) == len(candidates):
             return True
         else:
+            logger.info(
+                f"Round {round_number} failed. {len(candidates) - len(pairs)} still to"
+                f" pair ({[c for c in candidates if not c.paired]}"
+            )
             return self.match_cohort(cohort, round_number + 1)
 
 
 class Matching:
-    def __init__(self, candidates: Sequence[Candidate], roles: Sequence[Role]):
+    def __init__(
+        self, candidates: Sequence[Candidate], roles: Sequence[Role], pair_type: Type[P]
+    ):
         self.candidates = candidates
         self.roles = roles
         self.pairs = [
-            self._score_or_disqualify(Pair(), c, r) for c in candidates for r in roles
+            self._score_or_disqualify(pair_type(), c, r)
+            for c in candidates
+            for r in roles
         ]
         self.score_grid = np.reshape(self.pairs, (len(candidates), len(roles)))
 
@@ -245,11 +280,11 @@ class Matching:
             if np.all(column == DISALLOWED):
                 rejects.append(self.roles[i])
                 self.roles[i].no_match = True
-                print(f"No candidate could be found for role {self.roles[i]}")
+                logger.info(f"No candidate could be found for role {self.roles[i]}")
         return rejects
 
     @staticmethod
-    def _score_or_disqualify(p: Pair, candidate: C, role: R) -> Union[DISALLOWED, int]:
+    def _score_or_disqualify(p: P, candidate: C, role: R) -> Union[DISALLOWED, int]:
         p.score_pair(candidate, role)
         if p.disqualified:
             return DISALLOWED
@@ -267,8 +302,19 @@ class Matching:
         :return: Return a list of tuples, representing the candidate-role pairings
 
         """
-        pairs = self._match()
-        return [self._convert_pair(p) for p in pairs]
+        try:
+            pairs = self._match()
+            return [self._convert_pair(p) for p in pairs]
+        except UnsolvableMatrix:
+            log_copy = self.score_grid.copy()
+            log_copy[log_copy == DISALLOWED] = "D"
+            np.savetxt(
+                f"{datetime.datetime.utcnow()}-log.csv",
+                log_copy,
+                delimiter=",",
+                fmt="%s",
+            )
+            raise UnsolvableMatrix
 
     def _convert_pair(self, pair: tuple[int, int]) -> tuple[str, str]:
         candidate, role = pair

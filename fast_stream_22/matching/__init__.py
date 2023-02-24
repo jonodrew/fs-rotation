@@ -1,5 +1,5 @@
 from .models import Candidate, Role
 from .match import Matching
-from .pair import Pair
+from .pair import BasePair
 
-__all__ = ["Pair", "Candidate", "Role", "Matching"]
+__all__ = ["Candidate", "Role", "Matching", "BasePair"]
