@@ -193,11 +193,15 @@ class Process:
                 shortlist_length = bid.min_number
             else:
                 shortlist_length = bid.number - bid.count
-            shortlisted_roles.extend(
-                [role for role in suitable_roles if role.department == bid.department][
-                    :shortlist_length
-                ]
-            )
+            departmental_roles = [
+                role for role in suitable_roles if role.department == bid.department
+            ][:shortlist_length]
+            if len(departmental_roles) < shortlist_length:
+                logger.warning(
+                    f"Cohort {cohort}: {bid.department} bid {bid.number}, offered"
+                    f" {len(departmental_roles)} roles"
+                )
+            shortlisted_roles.extend(departmental_roles)
         return candidates, shortlisted_roles
 
     def match_cohort(
