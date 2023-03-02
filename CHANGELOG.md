@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - calculating a score for a role that offers "ALL" skills has changed, and now offers X points
 
+## [0.12.2]
+### Added
+- support for secondments, which are treated as a cohort
+
+### Changed
+- roles that are suitable for Y2 are assumed to be suitable as secondments (needs verifying with users)
+
+
 ## [0.10.0] - 2023-02-09
 ## Added
 - This adds support for the particulars of scoring the SEFS specialism
