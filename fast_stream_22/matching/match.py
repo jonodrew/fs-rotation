@@ -227,6 +227,11 @@ class Process:
         candidates, shortlisted_roles = self._prepare_round(cohort, round_number)
         if not shortlisted_roles:
             raise Exception("No roles left to try!")
+        elif len(candidates) > len(shortlisted_roles) and not round_number == 0:
+            raise Exception(
+                f"Cohort {cohort.name} round {round_number}: More candidates"
+                f" ({len(candidates)}) than roles ({len(shortlisted_roles)})"
+            )
         this_round = Matching(candidates, shortlisted_roles, self.specialism)
         if rejects := this_round.reject_impossible_roles():
             logger.info(f"Attempt #{failures}: Failed to find enough roles")
