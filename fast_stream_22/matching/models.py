@@ -186,9 +186,9 @@ class Travel(IntEnum):
 
 
 class Cohort(IntEnum):
-    One = 2
-    Two = 3
-    Secondment = 1
+    One = 1
+    Two = 2
+    Secondment = 3
     Three = 4
 
     @classmethod
