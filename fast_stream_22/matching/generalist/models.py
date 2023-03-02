@@ -62,6 +62,8 @@ class GeneralistRole(Role):
         super().__init__(**kwargs)
         self.accessibility = accessibility
         self.anchor = anchor
+        if Cohort.Two in self.suitable_year_groups:
+            self.suitable_year_groups.add(Cohort.Secondment)
 
 
 def register_method_called(
