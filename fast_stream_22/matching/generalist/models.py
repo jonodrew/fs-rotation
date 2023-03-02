@@ -101,7 +101,9 @@ class GeneralistPair(BasePair):
         :param r: the Role
         :return: None
         """
-        self.disqualified = r.travel_requirements > c.travel_requirements
+        self.disqualified = (
+            r.travel_requirements > c.travel_requirements and not c.can_relocate
+        )
 
     @register_scoring_method
     def _check_prior_departments(
