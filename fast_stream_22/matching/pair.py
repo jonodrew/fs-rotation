@@ -45,7 +45,7 @@ class BasePair(Generic[C, R]):
         "stretch": 10,
         "year_appropriate": 5,
     }
-    min_score: dict[int, int] = {Cohort.One: 5, Cohort.Two: 15, Cohort.Three: 20}
+    min_score: dict[int, int] = {Cohort.One: 15, Cohort.Two: 20, Cohort.Three: 25}
 
     def __init_subclass__(cls, **kwargs):
         cls.scoring_method_names = set()

@@ -85,10 +85,12 @@ class GeneralistPair(BasePair):
         **BasePair.scoring_weights,
         "anchor": 15,
         "preference": 10,
-        "year_appropriate": 15,
     }
 
-    min_score = {**BasePair.min_score, Cohort.Secondment: 15, Cohort.Three: 25}
+    min_score = {
+        **BasePair.min_score,
+        Cohort.Secondment: BasePair.min_score[Cohort.Two],
+    }
 
     def __init__(self):
         super().__init__()
