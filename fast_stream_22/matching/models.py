@@ -1,6 +1,6 @@
 import functools
 from enum import IntEnum
-from typing import Literal, Optional
+from typing import Literal, Optional, Self  # type: ignore
 import json
 
 SkillLevel = Literal[0, 1, 2, 3, 4, 5]
