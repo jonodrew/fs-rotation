@@ -1,10 +1,12 @@
 import csv
 from functools import partial
+from typing import Iterable
 
 import click
 
 from fast_stream_22.matching.generalist.models import GeneralistPair
 from fast_stream_22.matching.match import Process, Bid
+from fast_stream_22.matching.models import Cohort
 from fast_stream_22.matching.pair import Pair
 from fast_stream_22.matching.read_in import read_candidates, read_roles
 import time
@@ -44,11 +46,14 @@ def conduct_matching(
     specialisms = {"generalist": GeneralistPair}
     dept_bids = []
     with open(bid_file) as bids_file:
-        bids_reader = csv.reader(bids_file)
+        bids_reader: Iterable[dict[str, str]] = csv.DictReader(bids_file)
         for row in bids_reader:
-            partial_bid = partial(Bid, _department=row[0])
-            for cohort, value in enumerate(row[1:]):
-                dept_bids.extend([partial_bid(cohort=cohort + 1, number=int(value))])
+            dept = row.pop("dept")
+            partial_bid = partial(Bid, _department=dept)
+            for cohort, value in row.items():
+                dept_bids.extend(
+                    [partial_bid(cohort=Cohort.factory(cohort), number=int(value))]
+                )
     process_obj = Process(
         read_candidates(candidate_file, specialism),
         read_roles(role_file, specialism),

@@ -88,7 +88,7 @@ class Candidate(BaseClass):
         self.can_relocate = json.loads(can_relocate.lower())
         self.first_preference_location = first_location_preference
         self.second_preference_location = second_location_preference
-        self.year_group = year_group
+        self.year_group = Cohort.factory(year_group)
         self.prior_departments = set(
             map(self._stringify_department, prior_departments.split(","))
         )
@@ -103,14 +103,6 @@ class Candidate(BaseClass):
         self.has_passport = json.loads(has_passport.lower())
         self.last_role_main_skill = last_role_main_skill
         self.last_role_secondary_skill = last_role_secondary_skill
-
-    @property
-    def year_group(self):
-        return self._year_group
-
-    @year_group.setter
-    def year_group(self, year_group: str):
-        self._year_group = int(year_group)
 
 
 class Role(BaseClass):
@@ -146,8 +138,8 @@ class Role(BaseClass):
         self.locations = {loc.strip() for loc in location.split(",")}
         self.department = self._stringify_department(department)
         self.priority_role = Priority[priority_role.upper()]
-        self.suitable_year_groups: set[int] = {
-            int(year) for year in suitable_for_year_group.split(",")
+        self.suitable_year_groups: set[Cohort] = {
+            Cohort.factory(year) for year in suitable_for_year_group.split(",")
         }
         self.private_office_role = json.loads(private_office_role.lower())
         self.line_management_role = json.loads(line_management_role.lower())
@@ -191,3 +183,15 @@ class Travel(IntEnum):
             "None": cls.NO_TRAVEL,
         }
         return mapping[travel]
+
+
+class Cohort(IntEnum):
+    One = 2
+    Two = 3
+    Secondment = 1
+    Three = 4
+
+    @classmethod
+    def factory(cls, cohort_str) -> Self:  # type: ignore
+        mapping = {"1": cls.One, "2": cls.Two, "3": cls.Three, "6m": cls.Secondment}
+        return mapping[cohort_str]

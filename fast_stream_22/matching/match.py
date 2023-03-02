@@ -15,7 +15,7 @@ from typing import (
 )
 from munkres import DISALLOWED, make_cost_matrix, Munkres, UnsolvableMatrix
 
-from fast_stream_22.matching.models import Candidate, Role, BaseClass
+from fast_stream_22.matching.models import Candidate, Role, BaseClass, Cohort
 from fast_stream_22.matching.pair import Pair, R, C, P
 import numpy as np
 
@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 @dataclasses.dataclass
 class Bid:
-    cohort: int
+    cohort: Cohort
     _department: str
     number: int = 0
     count: int = 0
@@ -68,11 +68,11 @@ class Process:
         self.senior_to_junior = senior_to_junior
         self.specialism = pair_type
 
-    def _compute_cohort(self, cohort: int):
+    def _compute_cohort(self, cohort: Cohort):
         if self.match_cohort(cohort):
-            logger.info(f"Successfully matched cohort {cohort}")
+            logger.info(f"Successfully matched cohort {cohort.name}")
         else:
-            logger.info(f"Cohort {cohort} could not be perfectly matched")
+            logger.info(f"Cohort {cohort.name} could not be perfectly matched")
         self.reset_roles()
         for pair in self.pairings[cohort]:
             logger.info(f"{','.join(map(str, pair))}")
@@ -166,11 +166,11 @@ class Process:
         return Matching(candidates, roles, self.specialism).report_pairs()
 
     @functools.lru_cache
-    def _cohort_bids(self, cohort: int) -> dict[str, Bid]:
+    def _cohort_bids(self, cohort: Cohort) -> dict[str, Bid]:
         return {bid.department: bid for bid in self.bids if bid.cohort == cohort}
 
     def _prepare_round(
-        self, cohort: int, round_number: int
+        self, cohort: Cohort, round_number: int
     ) -> tuple[list[Candidate], list[Role]]:
         """
         Prepare the inputs for a round of matching. If this is the zeroth round, limit roles to be put forward to 80% of
@@ -198,14 +198,14 @@ class Process:
             ][:shortlist_length]
             if len(departmental_roles) < shortlist_length:
                 logger.warning(
-                    f"Cohort {cohort}: {bid.department} bid {bid.number}, offered"
+                    f"Cohort {cohort.name}: {bid.department} bid {bid.number}, offered"
                     f" {len(departmental_roles)} roles"
                 )
             shortlisted_roles.extend(departmental_roles)
         return candidates, shortlisted_roles
 
     def match_cohort(
-        self, cohort: int, round_number: int = 0, failures: int = 0
+        self, cohort: Cohort, round_number: int = 0, failures: int = 0
     ) -> bool:
         """
         This method takes a cohort and tries to match the candidates to potential roles. Where matches are made, bids

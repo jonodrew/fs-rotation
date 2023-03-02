@@ -40,7 +40,7 @@ def random_candidate_dict():
         candidate = {
             "uuid": f"C-{uuid.uuid4()}",
             "clearance_held": random.choice(["SC", "DV"]),
-            "year_group": random.choice([i for i in range(1, 5)]),
+            "year_group": random.choice([i for i in range(1, 4)]),
             "can_relocate": True,
             "first_location_preference": random.choice(locations),
             "second_location_preference": random.choice([*locations, None]),
@@ -78,7 +78,7 @@ def random_role_dict():
             "priority_role": random.choice(["High", "Medium", "Low"]),
             "suitable_for_year_group": ",".join(
                 map(
-                    str, random.sample([i for i in range(1, 5)], k=random.randint(1, 4))
+                    str, random.sample([i for i in range(1, 4)], k=random.randint(1, 3))
                 )
             ),
             "private_office_role": False,
