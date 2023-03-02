@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import dataclasses
 import datetime
-import functools
 import logging
 import sys
 from collections import defaultdict
@@ -165,9 +164,12 @@ class Process:
         """
         return Matching(candidates, roles, self.specialism).report_pairs()
 
-    @functools.lru_cache
     def _cohort_bids(self, cohort: Cohort) -> dict[str, Bid]:
-        return {bid.department: bid for bid in self.bids if bid.cohort == cohort}
+        return {
+            bid.department: bid
+            for bid in self.bids
+            if bid.cohort == cohort and bid.count < bid.number
+        }
 
     def _prepare_round(
         self, cohort: Cohort, round_number: int
@@ -259,8 +261,8 @@ class Process:
             return True
         else:
             logger.info(
-                f"Round {round_number} failed. {len(candidates) - len(pairs)} still to"
-                f" pair ({[c for c in candidates if not c.paired]}"
+                f"Round {round_number} incomplete. {len(candidates) - len(pairs)} still"
+                f" to pair ({[c for c in candidates if not c.paired]}"
             )
             return self.match_cohort(cohort, round_number + 1)
 
