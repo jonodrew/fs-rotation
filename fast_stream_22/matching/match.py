@@ -46,6 +46,10 @@ class Bid:
 Result = tuple[str, str, int]
 
 
+class OutOfRolesException(Exception):
+    pass
+
+
 class Process:
     def __init__(
         self,
@@ -228,9 +232,9 @@ class Process:
             )
         candidates, shortlisted_roles = self._prepare_round(cohort, round_number)
         if not shortlisted_roles:
-            raise Exception("No roles left to try!")
+            raise OutOfRolesException("No roles left to try!")
         elif len(candidates) > len(shortlisted_roles) and not round_number == 0:
-            raise Exception(
+            raise OutOfRolesException(
                 f"Cohort {cohort.name} round {round_number}: More candidates"
                 f" ({len(candidates)}) than roles ({len(shortlisted_roles)})"
             )
