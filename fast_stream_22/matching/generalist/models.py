@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from functools import wraps
 from typing import Callable
-from fast_stream_22.matching import BasePair, Candidate, Role
-from fast_stream_22.matching.models import Travel, Clearance, Cohort
+from fast_stream_22.matching.pair import BasePair
+from fast_stream_22.matching.models import Travel, Clearance, Cohort, Candidate, Role
 from fast_stream_22.matching.pair import register_scoring_method, C, R
 
 
@@ -63,7 +63,7 @@ class GeneralistRole(Role):
         self.accessibility = accessibility
         self.anchor = anchor
         if Cohort.Two in self.suitable_year_groups:
-            self.suitable_year_groups.add(Cohort.Secondment)
+            self.suitable_year_groups.add(Cohort.SixMonth)
 
 
 def register_method_called(
@@ -89,7 +89,7 @@ class GeneralistPair(BasePair):
 
     min_score = {
         **BasePair.min_score,
-        Cohort.Secondment: BasePair.min_score[Cohort.Two],
+        Cohort.SixMonth: BasePair.min_score[Cohort.Two],
     }
 
     def __init__(self):

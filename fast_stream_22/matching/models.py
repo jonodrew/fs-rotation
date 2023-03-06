@@ -188,10 +188,10 @@ class Travel(IntEnum):
 class Cohort(IntEnum):
     One = 1
     Two = 2
-    Secondment = 3
+    SixMonth = 3
     Three = 4
 
     @classmethod
     def factory(cls, cohort_str) -> Self:  # type: ignore
-        mapping = {"1": cls.One, "2": cls.Two, "3": cls.Three, "6m": cls.Secondment}
+        mapping = {"1": cls.One, "2": cls.Two, "3": cls.Three, "6m": cls.SixMonth}
         return mapping[cohort_str]
