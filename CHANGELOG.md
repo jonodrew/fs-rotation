@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - calculating a score for a role that offers "ALL" skills has changed, and now offers X points
 
+## [0.13.0]
+### Changed
+- the system now shuffles the Candidates and Roles before matching them
+- the script `pairing_script` now takes an optional `iterations` argument. I recommend more than 10 to get a really
+  good spread of results
+-
+### Added
+- the system generates some management information about the best iteration
+
 ## [0.12.2]
 ### Added
 - support for secondments, which are treated as a cohort
