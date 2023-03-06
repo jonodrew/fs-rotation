@@ -1,22 +1,32 @@
 from __future__ import annotations
 
+import csv
 import dataclasses
 import datetime
 import logging
+import random
 import sys
 from collections import defaultdict
+from copy import deepcopy
+from functools import partial
 from typing import (
     Sequence,
     Union,
     TypeVar,
     Optional,
     Type,
+    Iterable,
+    MutableSequence,
 )
+
 from munkres import DISALLOWED, make_cost_matrix, Munkres, UnsolvableMatrix
 
+from fast_stream_22.matching.generalist.models import GeneralistPair
 from fast_stream_22.matching.models import Candidate, Role, BaseClass, Cohort
 from fast_stream_22.matching.pair import Pair, R, C, P
 import numpy as np
+
+from fast_stream_22.matching.read_in import read_candidates, read_roles
 
 logger = logging.getLogger(__name__)
 
@@ -53,8 +63,8 @@ class OutOfRolesException(Exception):
 class Process:
     def __init__(
         self,
-        all_candidates: Sequence[Candidate],
-        all_roles: Sequence[Role],
+        all_candidates: MutableSequence[Candidate],
+        all_roles: MutableSequence[Role],
         bids: Sequence[Bid],
         senior_to_junior: bool = False,
         pair_type: Type[P] = Pair,  # type: ignore
@@ -66,7 +76,7 @@ class Process:
         self._all_roles = all_roles
         self.all_roles_mapping: dict[str, Role] = {r.uid: r for r in all_roles}
         self.bids = bids
-        self.pairings: dict[int, list[Result]] = defaultdict(list)
+        self.pairings: dict[Cohort, list[Result]] = defaultdict(list)
         self.max_rounds = 5
         self.senior_to_junior = senior_to_junior
         self.specialism = pair_type
@@ -157,7 +167,7 @@ class Process:
         return [data_point for data_point in data if not data_point.paired]
 
     def pair_off(
-        self, candidates: Sequence[Candidate], roles: Sequence[Role]
+        self, candidates: MutableSequence[Candidate], roles: MutableSequence[Role]
     ) -> list[tuple[str, str]]:
         """
         Create a round of Matching, compute it, and return the pairs
@@ -250,6 +260,8 @@ class Process:
             role = self.all_roles_mapping[role_id]
             role.mark_paired()
             cohort_bids[role.department].count += 1
+            if cohort_bids[role.department].count > cohort_bids[role.department].number:
+                raise ValueError
             pair_scores.append(
                 (
                     candidate_id,
@@ -273,10 +285,15 @@ class Process:
 
 class Matching:
     def __init__(
-        self, candidates: Sequence[Candidate], roles: Sequence[Role], pair_type: Type[P]
+        self,
+        candidates: MutableSequence[Candidate],
+        roles: MutableSequence[Role],
+        pair_type: Type[P],
     ):
         self.candidates = candidates
         self.roles = roles
+        random.shuffle(self.candidates)
+        random.shuffle(self.roles)
         self.pairs = [
             self._score_or_disqualify(pair_type(), c, r)
             for c in candidates
@@ -334,3 +351,75 @@ class Matching:
     def _convert_pair(self, pair: tuple[int, int]) -> tuple[str, str]:
         candidate, role = pair
         return self.candidates[candidate].uid, self.roles[role].uid
+
+
+@dataclasses.dataclass
+class IterationOutcome:
+    def __init__(
+        self,
+        bids: list[Bid],
+        cohort_outcomes: dict[Cohort, list[Result]],
+        iteration: int,
+        success_bound: float = 0.8,
+    ):
+        self.bids = bids
+        self.outcomes = cohort_outcomes
+        self.success_bound = success_bound
+        self.total_score = sum(
+            pair[2] for cohort in self.outcomes.values() for pair in cohort
+        )
+        self.success_count = 0
+        self.iteration = iteration
+        self.count_success()
+
+    def count_success(self):
+        for bid in self.bids:
+            try:
+                if (bid.count / bid.number) >= self.success_bound:
+                    self.success_count += 1
+            except ZeroDivisionError:
+                pass
+
+
+def conduct_matching(
+    bid_file: str,
+    role_file: str,
+    candidate_file: str,
+    senior_first: bool,
+    specialism: str,
+    iterations: int,
+) -> dict[int, IterationOutcome]:
+    specialisms = {"generalist": GeneralistPair}
+    dept_bids = []
+    with open(bid_file) as bids_file:
+        bids_reader: Iterable[dict[str, str]] = csv.DictReader(bids_file)
+        for row in bids_reader:
+            dept = row.pop("dept")
+            partial_bid = partial(Bid, _department=dept)
+            for cohort, value in row.items():
+                dept_bids.extend(
+                    [partial_bid(cohort=Cohort.factory(cohort), number=int(value))]
+                )
+    pairings = dict()
+    i = 0
+    candidates = read_candidates(candidate_file, specialism)
+    roles = read_roles(role_file, specialism)
+    while i < iterations:
+        c = deepcopy(candidates)
+        r = deepcopy(roles)
+        b = deepcopy(dept_bids)
+        try:
+            process_obj = Process(
+                c,
+                r,
+                b,
+                senior_first,
+                pair_type=specialisms.get(specialism, Pair),
+            )
+            process_obj.compute()
+            iteration = IterationOutcome(b, process_obj.pairings, i)
+            pairings[i] = iteration
+        except (UnsolvableMatrix, OutOfRolesException):
+            logger.warning("Unsolvable error")
+        i += 1
+    return pairings

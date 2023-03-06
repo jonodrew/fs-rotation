@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import csv
 import functools
-from typing import Sequence, Type, TypeVar, Optional
+from typing import Type, TypeVar, Optional, MutableSequence
 
 from fast_stream_22.matching.SEFS.models import SefsRole, SefsCandidate
 from fast_stream_22.matching.generalist.models import (
@@ -15,7 +15,7 @@ from fast_stream_22.matching.models import Candidate, Role, BaseClass
 @functools.lru_cache
 def read_candidates(
     path_to_csv: str = "./candidates.csv", specialism: str = None
-) -> Sequence[Candidate]:
+) -> MutableSequence[Candidate]:
     specialisms = {
         None: Candidate,
         "SEFS": SefsCandidate,
@@ -27,7 +27,7 @@ def read_candidates(
 @functools.lru_cache
 def read_roles(
     path_to_csv: str = "./roles.csv", specialism: Optional[str] = None
-) -> Sequence[Role]:
+) -> MutableSequence[Role]:
     specialisms = {"SEFS": SefsRole, None: Role, "generalist": GeneralistRole}
     return _read_and_create_objects(path_to_csv, specialisms[specialism])
 
