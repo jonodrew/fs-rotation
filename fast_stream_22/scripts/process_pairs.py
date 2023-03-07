@@ -30,7 +30,6 @@ def process_matches(
         bids, roles, candidates, senior_first, specialism, iterations
     )
     end = time.time()
-    click.echo(f"Task completed in {(end-start)} seconds")
     for iteration, outcome in cohort_pairings.items():
         for cohort_name, cohort in outcome.outcomes.items():
             for pair in cohort:
@@ -41,6 +40,7 @@ def process_matches(
     best_iteration_by_success_bound = max(
         cohort_pairings.values(), key=lambda outcome: outcome.success_count
     )
+    click.echo(f"Task completed in {(end-start)} seconds")
     click.echo(f"Best iteration by score: {best_iteration_by_score.iteration}")
     click.echo(
         "Best iteration by departments scoring above criteria"

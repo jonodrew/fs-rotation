@@ -213,7 +213,7 @@ class Process:
                 role for role in suitable_roles if role.department == bid.department
             ][:shortlist_length]
             if len(departmental_roles) < shortlist_length:
-                logger.warning(
+                logger.debug(
                     f"Cohort {cohort.name}: {bid.department} bid {bid.number}, offered"
                     f" {len(departmental_roles)} roles"
                 )
