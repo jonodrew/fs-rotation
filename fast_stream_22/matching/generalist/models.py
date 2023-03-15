@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from functools import wraps
 from typing import Callable
-from fast_stream_22.matching import BasePair, Candidate, Role
-from fast_stream_22.matching.models import Travel, Clearance
+from fast_stream_22.matching.pair import BasePair
+from fast_stream_22.matching.models import Travel, Clearance, Cohort, Candidate, Role
 from fast_stream_22.matching.pair import register_scoring_method, C, R
 
 
@@ -23,7 +23,6 @@ class GeneralistCandidate(Candidate):
         match_pref_2: str = None,
         **kwargs,
     ):
-        self.secondment = False
         kwargs["prior_departments"] = kwargs["prior_departments"].replace(" ", ",")
         super().__init__(**kwargs)
         self.match_preferences = {match_pref_2, match_pref_1}
@@ -54,36 +53,17 @@ class GeneralistCandidate(Candidate):
                 self.prior_departments.discard(department)
 
     @property
-    def year_group(self) -> int:
-        return self._year_group
-
-    @year_group.setter
-    def year_group(self, year_group: str) -> None:
-        if year_group.endswith("m"):
-            self.secondment = True
-            self._year_group = 2
-        else:
-            self._year_group = int(year_group)
-
-    @property
     def clearance(self) -> Clearance:
         return super().clearance if self._clearance != Clearance.DV else Clearance.SC
 
 
 class GeneralistRole(Role):
     def __init__(self, accessibility: str, anchor: str, **kwargs):
-        self.secondment = False
-        self.secondment_only = False
-        if "6m" in kwargs["suitable_for_year_group"]:
-            self.secondment = True
-            if kwargs["suitable_for_year_group"] == "6m":
-                self.secondment_only = True
-        kwargs["suitable_for_year_group"] = kwargs["suitable_for_year_group"].replace(
-            "6m", "2"
-        )
         super().__init__(**kwargs)
         self.accessibility = accessibility
         self.anchor = anchor
+        if Cohort.Two in self.suitable_year_groups:
+            self.suitable_year_groups.add(Cohort.SixMonth)
 
 
 def register_method_called(
@@ -101,19 +81,20 @@ def register_method_called(
 
 
 class GeneralistPair(BasePair):
-    scoring_weights = {**BasePair.scoring_weights, "anchor": 15, "preference": 10}
+    scoring_weights = {
+        **BasePair.scoring_weights,
+        "anchor": 15,
+        "preference": 10,
+    }
+
+    min_score = {
+        **BasePair.min_score,
+        Cohort.SixMonth: BasePair.min_score[Cohort.Two],
+    }
 
     def __init__(self):
         super().__init__()
         self.methods_called = set()
-
-    @register_scoring_method
-    def _check_secondment(
-        self, candidate: GeneralistCandidate, role: GeneralistRole
-    ) -> None:
-        self.disqualified = (candidate.secondment and not role.secondment) or (
-            role.secondment_only and not candidate.secondment
-        )
 
     @register_scoring_method
     def _check_travel(self, c: GeneralistCandidate, r: GeneralistRole) -> None:

@@ -1,4 +1,4 @@
-from fast_stream_22.scripts.process_pairs import conduct_matching
+from fast_stream_22.matching.match import conduct_matching
 
 
 def test_can_match_generalists_with_csv_data():
@@ -8,4 +8,5 @@ def test_can_match_generalists_with_csv_data():
         candidate_file="tests/test_generalist/test_candidates.csv",
         senior_first=False,
         specialism="generalist",
+        iterations=3,
     )

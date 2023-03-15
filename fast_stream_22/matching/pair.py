@@ -3,8 +3,7 @@ import os
 from functools import wraps
 from typing import Callable, TypeVar, Generic
 
-from fast_stream_22.matching.models import Candidate, Role
-
+from fast_stream_22.matching.models import Candidate, Role, Cohort
 
 P = TypeVar("P", bound="BasePair")
 C = TypeVar("C", bound=Candidate)
@@ -46,7 +45,7 @@ class BasePair(Generic[C, R]):
         "stretch": 10,
         "year_appropriate": 5,
     }
-    min_score: dict[int, int] = {1: 5, 2: 15, 3: 20}
+    min_score: dict[int, int] = {Cohort.One: 15, Cohort.Two: 20, Cohort.Three: 25}
 
     def __init_subclass__(cls, **kwargs):
         cls.scoring_method_names = set()
