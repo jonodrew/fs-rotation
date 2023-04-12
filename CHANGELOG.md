@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - calculating a score for a role that offers "ALL" skills has changed, and now offers X points
 
+## [0.13.1] - 2023-04-12
+### Changed
+- Candidates who've previously relocated are more likely to get their first or second choice of location
+
 ## [0.13.0]
 ### Changed
 - the system now shuffles the Candidates and Roles before matching them
