@@ -93,6 +93,7 @@ class Candidate(BaseClass):
         has_passport: StrBool,
         last_role_main_skill: Optional[str] = None,
         last_role_secondary_skill: Optional[str] = None,
+        previous_relocation: StrBool = "false",
     ):
         super().__init__(uuid, clearance_held)
         self.can_relocate = self._boolify(can_relocate.lower())
@@ -113,6 +114,7 @@ class Candidate(BaseClass):
         self.has_passport = self._boolify(has_passport.lower())
         self.last_role_main_skill = last_role_main_skill
         self.last_role_secondary_skill = last_role_secondary_skill
+        self.has_relocated = self._boolify(previous_relocation)
 
 
 class Role(BaseClass):

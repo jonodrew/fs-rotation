@@ -24,6 +24,7 @@ class TestPair:
         pair.candidate.can_relocate = True
         pair.candidate.first_preference_location = "Toontown"
         pair.role.locations = "Toontown"
+        pair.candidate.has_relocated = False
         pair._score_location(pair.candidate, pair.role)
         assert not pair.disqualified
         assert pair._score == pair.scoring_weights["first_location"]
@@ -34,6 +35,7 @@ class TestPair:
         pair.candidate.first_preference_location = "Any"
         pair.candidate.second_preference_location = "Any"
         pair.role.locations = "Toontown"
+        pair.candidate.has_relocated = False
         pair._score_location(pair.candidate, pair.role)
         assert pair._score == pair.scoring_weights["first_location"]
 
