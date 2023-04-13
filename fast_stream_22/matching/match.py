@@ -420,6 +420,6 @@ def conduct_matching(
             iteration = IterationOutcome(b, process_obj.pairings, i)
             pairings[i] = iteration
         except (UnsolvableMatrix, OutOfRolesException):
-            logger.warning("Unsolvable error")
+            logger.warning(f"Iteration #{i} is unsolvable")
         i += 1
     return pairings

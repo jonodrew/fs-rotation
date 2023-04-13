@@ -1,7 +1,7 @@
 import functools
 from enum import IntEnum
 from typing import Literal, Optional, Self  # type: ignore
-import json
+
 
 SkillLevel = Literal[0, 1, 2, 3, 4, 5]
 Skills = dict[str, SkillLevel]
@@ -49,6 +49,16 @@ class BaseClass:
         cls.departments.add(dept)
         return dept
 
+    @classmethod
+    def _boolify(cls, string: str):
+        s = string.lower()
+        if s == "true":
+            return True
+        elif s == "false":
+            return False
+        else:
+            raise ValueError
+
     @property
     def clearance(self) -> Clearance:
         return self._clearance
@@ -83,26 +93,28 @@ class Candidate(BaseClass):
         has_passport: StrBool,
         last_role_main_skill: Optional[str] = None,
         last_role_secondary_skill: Optional[str] = None,
+        previous_relocation: StrBool = "false",
     ):
         super().__init__(uuid, clearance_held)
-        self.can_relocate = json.loads(can_relocate.lower())
+        self.can_relocate = self._boolify(can_relocate.lower())
         self.first_preference_location = first_location_preference
         self.second_preference_location = second_location_preference
         self.year_group = Cohort.factory(year_group)
         self.prior_departments = set(
             map(self._stringify_department, prior_departments.split(","))
         )
-        self.wants_line_management = json.loads(wants_line_management.lower())
-        self.wants_private_office = json.loads(wants_private_office.lower())
-        self.no_defence = json.loads(no_defence.lower())
-        self.no_immigration = json.loads(no_immigration.lower())
+        self.wants_line_management = self._boolify(wants_line_management.lower())
+        self.wants_private_office = self._boolify(wants_private_office.lower())
+        self.no_defence = self._boolify(no_defence.lower())
+        self.no_immigration = self._boolify(no_immigration.lower())
         self.preferred_office_attendance = preferred_office_attendance
         self.primary_skill = primary_skills_seeking
         self.secondary_skill = secondary_skills_seeking
         self.british_national = Nationality[british_national.replace(" ", "_").upper()]
-        self.has_passport = json.loads(has_passport.lower())
+        self.has_passport = self._boolify(has_passport.lower())
         self.last_role_main_skill = last_role_main_skill
         self.last_role_secondary_skill = last_role_secondary_skill
+        self.has_relocated = self._boolify(previous_relocation)
 
 
 class Role(BaseClass):
@@ -134,19 +146,19 @@ class Role(BaseClass):
         self._nationality_requirement = NationalityRequirement[
             nationality_requirement.replace(" ", "_").upper()
         ]
-        self.passport_requirement = json.loads(passport_requirement.lower())
+        self.passport_requirement = self._boolify(passport_requirement.lower())
         self.locations = {loc.strip() for loc in location.split(",")}
         self.department = self._stringify_department(department)
         self.priority_role = Priority[priority_role.upper()]
         self.suitable_year_groups: set[Cohort] = {
             Cohort.factory(year) for year in suitable_for_year_group.split(",")
         }
-        self.private_office_role = json.loads(private_office_role.lower())
-        self.line_management_role = json.loads(line_management_role.lower())
+        self.private_office_role = self._boolify(private_office_role.lower())
+        self.line_management_role = self._boolify(line_management_role.lower())
         self.office_arrangements = office_arrangement
         self.travel_requirements = Travel.factory(travel_requirements)
-        self.defence_role = json.loads(defence_role.lower())
-        self.immigration_role = json.loads(immigration_role.lower())
+        self.defence_role = self._boolify(defence_role.lower())
+        self.immigration_role = self._boolify(immigration_role.lower())
         self.skill_focus = skill_focus
         self.secondary_focus = secondary_focus
         self.no_match: bool = False

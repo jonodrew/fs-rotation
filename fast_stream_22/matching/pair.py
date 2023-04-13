@@ -44,6 +44,7 @@ class BasePair(Generic[C, R]):
         "skill": 20,
         "stretch": 10,
         "year_appropriate": 5,
+        "has_relocated": 10,
     }
     min_score: dict[int, int] = {Cohort.One: 15, Cohort.Two: 20, Cohort.Three: 25}
 
@@ -95,6 +96,14 @@ class BasePair(Generic[C, R]):
 
     @register_scoring_method
     def _score_location(self, candidate: C, role: R) -> None:
+        if candidate.has_relocated:
+            self.scoring_weights["first_location"] += self.scoring_weights[
+                "has_relocated"
+            ]
+            self.scoring_weights["second_location"] += self.scoring_weights[
+                "has_relocated"
+            ]
+
         if role.from_anywhere():
             self._score += self.scoring_weights["first_location"]
         elif (
