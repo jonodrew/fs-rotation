@@ -41,6 +41,9 @@ class GeneralistCandidate(Candidate):
         self.travel_requirements: Travel = Travel.factory(travel_requirements)
         self._fix_previous_departments()
 
+        if self.year_group == Cohort.SixMonth:
+            self.can_relocate = False
+
     def _fix_previous_departments(self):
         """
         Scottish and Welsh government are so varied that Candidates can visit them again, so we remove them as a 'prior
