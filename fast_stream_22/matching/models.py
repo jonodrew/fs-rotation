@@ -200,7 +200,7 @@ class Travel(IntEnum):
 class Cohort(IntEnum):
     One = 1
     Two = 2
-    SixMonth = 3
+    SixMonth = 5
     Three = 4
 
     @classmethod
