@@ -7,7 +7,15 @@ from fast_stream_22.matching.models import Travel, Clearance, Cohort, Candidate,
 from fast_stream_22.matching.pair import register_scoring_method, C, R
 
 
-class GeneralistCandidate(Candidate):
+class AccessibilityInterface:
+    def __init__(self, accessibility: str, **kwargs):
+        self._accessibility = {
+            requirement.strip() for requirement in accessibility.split(",")
+        }
+        super().__init__(**kwargs)
+
+
+class GeneralistCandidate(AccessibilityInterface, Candidate):
     def __init__(
         self,
         primary_anchor_seeking: str,
@@ -18,7 +26,6 @@ class GeneralistCandidate(Candidate):
         dept_pref_4: str,
         dept_pref_5: str,
         travel_requirements: str,
-        accessibility: str = None,
         match_pref_1: str = None,
         match_pref_2: str = None,
         **kwargs,
@@ -59,14 +66,21 @@ class GeneralistCandidate(Candidate):
     def clearance(self) -> Clearance:
         return super().clearance if self._clearance != Clearance.DV else Clearance.SC
 
+    @property
+    def accessibility_needs(self):
+        return self._accessibility
 
-class GeneralistRole(Role):
-    def __init__(self, accessibility: str, anchor: str, **kwargs):
+
+class GeneralistRole(AccessibilityInterface, Role):
+    def __init__(self, anchor: str, **kwargs):
         super().__init__(**kwargs)
-        self.accessibility = accessibility
         self.anchor = anchor
         if Cohort.Two in self.suitable_year_groups:
             self.suitable_year_groups.add(Cohort.SixMonth)
+
+    @property
+    def accessibility_adjustment(self):
+        return self._accessibility
 
 
 def register_method_called(
@@ -98,6 +112,20 @@ class GeneralistPair(BasePair):
     def __init__(self):
         super().__init__()
         self.methods_called = set()
+
+    @register_scoring_method
+    def _check_accessibility(self, c: GeneralistCandidate, r: GeneralistRole) -> None:
+        """
+        Check whether the accessibility needs of the Candidate are a subset (ie, contained within) the accessibility
+        adjustments offered by the Role
+
+        :param c:
+        :param r:
+        :return:
+        """
+        self.disqualified = not c.accessibility_needs.issubset(
+            r.accessibility_adjustment
+        )
 
     @register_scoring_method
     def _check_travel(self, c: GeneralistCandidate, r: GeneralistRole) -> None:
