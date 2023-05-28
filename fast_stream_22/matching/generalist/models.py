@@ -43,6 +43,7 @@ class GeneralistCandidate(WorkingPatternsInterface, AccessibilityInterface, Cand
         **kwargs,
     ):
         kwargs["prior_departments"] = kwargs["prior_departments"].replace(" ", ",")
+        kwargs["working_patterns"] = kwargs["preferred_office_attendance"]
         super().__init__(**kwargs)
         self.match_preferences = {match_pref_2, match_pref_1}
         self.primary_anchor = primary_anchor_seeking
@@ -85,6 +86,7 @@ class GeneralistCandidate(WorkingPatternsInterface, AccessibilityInterface, Cand
 
 class GeneralistRole(WorkingPatternsInterface, AccessibilityInterface, Role):
     def __init__(self, anchor: str, **kwargs):
+        kwargs["working_patterns"] = kwargs["office_arrangement"]
         super().__init__(**kwargs)
         self.anchor = anchor
         if Cohort.Two in self.suitable_year_groups:
