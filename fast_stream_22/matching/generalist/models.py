@@ -7,6 +7,18 @@ from fast_stream_22.matching.models import Travel, Clearance, Cohort, Candidate,
 from fast_stream_22.matching.pair import register_scoring_method, C, R
 
 
+class WorkingPatternsInterface:
+    def __init__(self, working_patterns: str, **kwargs):
+        self._working_patterns = {
+            pattern.strip() for pattern in working_patterns.split(",")
+        }
+        super().__init__(**kwargs)
+
+    @property
+    def working_patterns(self):
+        return self._working_patterns
+
+
 class AccessibilityInterface:
     def __init__(self, accessibility: str, **kwargs):
         self._accessibility = {
@@ -15,7 +27,7 @@ class AccessibilityInterface:
         super().__init__(**kwargs)
 
 
-class GeneralistCandidate(AccessibilityInterface, Candidate):
+class GeneralistCandidate(WorkingPatternsInterface, AccessibilityInterface, Candidate):
     def __init__(
         self,
         primary_anchor_seeking: str,
@@ -31,6 +43,7 @@ class GeneralistCandidate(AccessibilityInterface, Candidate):
         **kwargs,
     ):
         kwargs["prior_departments"] = kwargs["prior_departments"].replace(" ", ",")
+        kwargs["working_patterns"] = kwargs["preferred_office_attendance"]
         super().__init__(**kwargs)
         self.match_preferences = {match_pref_2, match_pref_1}
         self.primary_anchor = primary_anchor_seeking
@@ -71,8 +84,9 @@ class GeneralistCandidate(AccessibilityInterface, Candidate):
         return self._accessibility
 
 
-class GeneralistRole(AccessibilityInterface, Role):
+class GeneralistRole(WorkingPatternsInterface, AccessibilityInterface, Role):
     def __init__(self, anchor: str, **kwargs):
+        kwargs["working_patterns"] = kwargs["office_arrangement"]
         super().__init__(**kwargs)
         self.anchor = anchor
         if Cohort.Two in self.suitable_year_groups:
@@ -150,6 +164,19 @@ class GeneralistPair(BasePair):
         :return: None
         """
         self.disqualified = r.department in c.prior_departments
+
+    @register_scoring_method
+    def _check_working_pattern(self, c: GeneralistCandidate, r: GeneralistRole) -> None:
+        """
+        We compare the role's required working pattern with the candidate preferences. If there is no overlap, this
+        marks the match as disqualified. The candidate is allowed to select one preferred working patterns, while the
+        role can offer any number of roles.
+
+        :param c: the Candidate
+        :param r: the Role
+        :return: None
+        """
+        self.disqualified = not c.working_patterns.issubset(r.working_patterns)
 
     @register_scoring_method
     @register_method_called
