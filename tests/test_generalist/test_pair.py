@@ -28,5 +28,5 @@ def test_disqualify_secondment_flag(candidate_secondment, role_secondment, expec
     r.suitable_year_groups = {2}
     p = GeneralistPair(c, r)
     assert not p.disqualified
-    p._check_year_group(c, r)
+    p._check_year_group()
     assert p.disqualified is expected

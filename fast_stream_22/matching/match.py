@@ -23,7 +23,7 @@ from munkres import DISALLOWED, make_cost_matrix, Munkres, UnsolvableMatrix
 
 from fast_stream_22.specialism.generalist import GeneralistPair
 from fast_stream_22.specialism.models import Candidate, Role, BaseClass, Cohort
-from fast_stream_22.specialism.pair import Pair, R, C, P
+from fast_stream_22.specialism.pair import Pair, P
 import numpy as np
 
 from fast_stream_22.matching.read_in import read_candidates, read_roles
@@ -268,7 +268,7 @@ class Process:
                     role_id,
                     self.specialism(
                         self.candidate_mapping[candidate_id], role
-                    ).score_pair(self.candidate_mapping[candidate_id], role),
+                    ).score_pair(),
                 )
             )
 
@@ -295,7 +295,7 @@ class Matching:
         random.shuffle(self.candidates)
         random.shuffle(self.roles)
         self.pairs = [
-            self._score_or_disqualify(pair_type(c, r), c, r)
+            self._score_or_disqualify(pair_type(c, r))
             for c in candidates
             for r in roles
         ]
@@ -316,8 +316,8 @@ class Matching:
         return rejects
 
     @staticmethod
-    def _score_or_disqualify(p: P, candidate: C, role: R) -> Union[DISALLOWED, int]:
-        p.score_pair(candidate, role)
+    def _score_or_disqualify(p: P) -> Union[DISALLOWED, int]:
+        p.score_pair()
         if p.disqualified:
             return DISALLOWED
         else:

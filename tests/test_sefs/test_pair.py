@@ -43,7 +43,7 @@ class TestScoreSkill:
         r = sefs_role
         p = SefsPair(c, r)
         assert p.score == 0
-        p._score_skill(c, r)
+        p._score_skill()
         assert p.score == score
 
     def test_when_skill_to_avoid_is_P_then_score_is_halved(
@@ -58,7 +58,7 @@ class TestScoreSkill:
         p = SefsPair(sefs_candidate, sefs_role)
         assert p.score == 0
 
-        p._score_skill(sefs_candidate, sefs_role)
+        p._score_skill()
 
         assert p.score == 10
 
@@ -73,6 +73,6 @@ class TestScoreSkill:
         p = SefsPair(sefs_candidate, sefs_role)
         assert p.score == 0
 
-        p._score_skill(sefs_candidate, sefs_role)
+        p._score_skill()
 
         assert p.disqualified

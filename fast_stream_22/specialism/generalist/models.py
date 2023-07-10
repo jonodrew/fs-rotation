@@ -98,12 +98,12 @@ class GeneralistRole(WorkingPatternsInterface, AccessibilityInterface, Role):
 
 
 def register_method_called(
-    func: Callable[["GeneralistPair", C, R], None]
-) -> Callable[["GeneralistPair", C, R], None]:
+    func: Callable[["GeneralistPair"], None]
+) -> Callable[["GeneralistPair"], None]:
     @wraps(func)
-    def _inner(instance: GeneralistPair, candidate: C, role: R) -> None:
+    def _inner(instance: GeneralistPair) -> None:
         before_score = instance.score
-        func(instance, candidate, role)
+        func(instance)
         if instance.score > before_score:
             instance.methods_called.add(func.__name__)
         return None
@@ -128,92 +128,87 @@ class GeneralistPair(BasePair):
         self.methods_called: set[Optional[str]] = set()
 
     @register_scoring_method
-    def _check_accessibility(self, c: GeneralistCandidate, r: GeneralistRole) -> None:
+    def _check_accessibility(self) -> None:
         """
         Check whether the accessibility needs of the Candidate are a subset (ie, contained within) the accessibility
         adjustments offered by the Role
 
-        :param c:
-        :param r:
         :return:
         """
-        self.disqualified = not c.accessibility_needs.issubset(
-            r.accessibility_adjustment
+        self.disqualified = not self.candidate.accessibility_needs.issubset(
+            self.role.accessibility_adjustment
         )
 
     @register_scoring_method
-    def _check_travel(self, c: GeneralistCandidate, r: GeneralistRole) -> None:
+    def _check_travel(self) -> None:
         """
         Disqualify candidates whose travel requirements don't match those in the role
 
-        :param c: the Candidate
-        :param r: the Role
         :return: None
         """
-        self.disqualified = r.travel_requirements > c.travel_requirements
+        self.disqualified = (
+            self.role.travel_requirements > self.candidate.travel_requirements
+        )
 
     @register_scoring_method
-    def _check_prior_departments(
-        self, c: GeneralistCandidate, r: GeneralistRole
-    ) -> None:
+    def _check_prior_departments(self) -> None:
         """
         In the Generalist scheme, candidates are disqualified from visiting a department they've previously visited
 
-        :param c: the Candidate
-        :param r: the Role
         :return: None
         """
-        self.disqualified = r.department in c.prior_departments
+        self.disqualified = self.role.department in self.candidate.prior_departments
 
     @register_scoring_method
-    def _check_working_pattern(self, c: GeneralistCandidate, r: GeneralistRole) -> None:
+    def _check_working_pattern(self) -> None:
         """
         We compare the role's required working pattern with the candidate preferences. If there is no overlap, this
         marks the match as disqualified. The candidate is allowed to select one preferred working patterns, while the
         role can offer any number of roles.
 
-        :param c: the Candidate
-        :param r: the Role
         :return: None
         """
-        self.disqualified = not c.working_patterns.issubset(r.working_patterns)
+        self.disqualified = not self.candidate.working_patterns.issubset(
+            self.role.working_patterns
+        )
 
     @register_scoring_method
     @register_method_called
-    def _score_department(
-        self, candidate: GeneralistCandidate, role: GeneralistRole
-    ) -> None:
-        if role.department in candidate.dept_prefs:
+    def _score_department(self) -> None:
+        if self.role.department in self.candidate.dept_prefs:
             self._score += self.scoring_weights["department"]
 
     @register_scoring_method
     @register_method_called
-    def _score_anchor(self, c: GeneralistCandidate, r: GeneralistRole) -> None:
-        if r.anchor in {c.primary_anchor, c.secondary_anchor}:
+    def _score_anchor(self) -> None:
+        if self.role.anchor in {
+            self.candidate.primary_anchor,
+            self.candidate.secondary_anchor,
+        }:
             self._score += self.scoring_weights["anchor"]
 
     @register_method_called
     @register_scoring_method
-    def _score_skill(self, candidate: C, role: R) -> None:
-        return super()._score_skill(candidate, role)
+    def _score_skill(self) -> None:
+        return super()._score_skill()
 
     @register_method_called
     @register_scoring_method
-    def _score_location(self, candidate: C, role: R) -> None:
-        return super()._score_location(candidate, role)
+    def _score_location(self) -> None:
+        return super()._score_location()
 
-    def _score_preferences(self, candidate: GeneralistCandidate):
+    def _score_preferences(self):
         preferences = {
             "Anchor": self._score_anchor.__name__,
             "Location": self._score_location.__name__,
             "Department": self._score_department.__name__,
             "Skill": self._score_skill.__name__,
         }
-        for preference in candidate.match_preferences:
+        for preference in self.candidate.match_preferences:
             if preferences.get(preference) in self.methods_called:
                 self._score += self.scoring_weights["preference"]
 
-    def score_pair(self, candidate: GeneralistCandidate, role: GeneralistRole) -> int:
-        super().score_pair(candidate, role)
-        self._score_preferences(candidate)
+    def score_pair(self) -> int:
+        super().score_pair()
+        self._score_preferences()
         return self.score
