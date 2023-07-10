@@ -1,7 +1,7 @@
 from typing import Literal
 
 from fast_stream_22.matching import Role, Candidate
-from fast_stream_22.matching.pair import register_scoring_method, BasePair
+from fast_stream_22.specialism.pair import register_scoring_method, BasePair
 
 Level = Literal["P", "A", "N"]
 Skills = Literal[
@@ -41,7 +41,7 @@ class SefsRole(Role):
 
 class SefsPair(BasePair):
     @register_scoring_method
-    def _score_skill(self, candidate: SefsCandidate, role: SefsRole) -> None:
+    def _score_skill(self) -> None:
         """
         This method scores the specifics of the SEFS specialism
 
@@ -50,15 +50,15 @@ class SefsPair(BasePair):
         :return:
         """
         skills_valence_map: dict[str, float] = {
-            candidate.primary_skill: 1.0,
-            candidate.secondary_skill: 0.8,
+            self.candidate.primary_skill: 1.0,
+            self.candidate.secondary_skill: 0.8,
         }
-        if not candidate.year_group == 1:
+        if not self.candidate.year_group == 1:
             skill_score = 0
             for skill, valence in skills_valence_map.items():
-                if role.skills[skill] == "P":
+                if self.role.skills[skill] == "P":
                     skill_score += int(self.scoring_weights["skill"] * valence)
-            if role.skills[candidate.not_required_skill] == "P":
+            if self.role.skills[self.candidate.not_required_skill] == "P":
                 skill_score = int(skill_score / 2)
             if skill_score == 0:
                 self.disqualified = True

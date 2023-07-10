@@ -4,7 +4,7 @@ from typing import Literal, TypeVar
 
 import pytest
 
-from fast_stream_22.matching.models import Role, Candidate, BaseClass
+from fast_stream_22.specialism.models import Role, Candidate, BaseClass
 
 T = TypeVar("T", bound=BaseClass)
 
@@ -25,7 +25,7 @@ def role_factory():
     return _role_factory
 
 
-def object_factory(object_type: Literal["candidate", "role"], kwargs) -> T:
+def object_factory(object_type: Literal["candidate", "role"], kwargs) -> BaseClass:
     return {"candidate": Candidate, "role": Role}[object_type](**kwargs)  # type: ignore
 
 

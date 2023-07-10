@@ -1,5 +1,5 @@
 import csv
-from fast_stream_22.matching.generalist.models import GeneralistRole
+from fast_stream_22.specialism.generalist import GeneralistRole
 
 
 def test_instantiation_from_csv_data():

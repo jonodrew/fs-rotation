@@ -34,6 +34,15 @@ Download this software with `git`. You will need [poetry](https://python-poetry.
 The rules for matching are being codified in the `Pair` class. The weightings are still subject to change, and at some
 point I'll need to find a way for users to make these changes.
 
+## Extending the software
+To extend the software, you may need to define new `Role`, `Candidate`, and `Pair` classes. These should inherit
+from the `Base-` class of each. Any methods that are to be scored should have the `register_scoring_method`
+decorator attached.
+
+Additionally, if you're going to rely on methods in the base classes, you may need to either override the method or
+change the attributes in the child class. I have no particular preference on which approach you take, and you could
+even mix the methods according to preference and how confident you are that colleagues will understand what you've done.
+
 ## Script
 There is a script in the `fast_stream_22.scripts` path. You can run it with
 

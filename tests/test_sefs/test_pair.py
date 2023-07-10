@@ -2,8 +2,8 @@ from unittest.mock import Mock
 
 import pytest
 
-from fast_stream_22.matching.SEFS.models import SefsPair, SefsCandidate, SefsRole
-from fast_stream_22.matching.pair import BasePair
+from fast_stream_22.specialism.SEFS.models import SefsPair, SefsCandidate, SefsRole
+from fast_stream_22.specialism.pair import BasePair
 
 
 def test_when_pair_created_scoring_method_added_to_parent_class():
@@ -41,9 +41,9 @@ class TestScoreSkill:
         c.year_group = year_group
 
         r = sefs_role
-        p = SefsPair()
+        p = SefsPair(c, r)
         assert p.score == 0
-        p._score_skill(c, r)
+        p._score_skill()
         assert p.score == score
 
     def test_when_skill_to_avoid_is_P_then_score_is_halved(
@@ -55,10 +55,10 @@ class TestScoreSkill:
         sefs_role.skills["Developing the GSE community"] = "P"
         sefs_role.skills["Building and Applying Knowledge"] = "A"
 
-        p = SefsPair()
+        p = SefsPair(sefs_candidate, sefs_role)
         assert p.score == 0
 
-        p._score_skill(sefs_candidate, sefs_role)
+        p._score_skill()
 
         assert p.score == 10
 
@@ -70,9 +70,9 @@ class TestScoreSkill:
         sefs_role.skills["Building and Applying Knowledge"] = "A"
         sefs_role.skills["Developing the GSE community"] = "A"
 
-        p = SefsPair()
+        p = SefsPair(sefs_candidate, sefs_role)
         assert p.score == 0
 
-        p._score_skill(sefs_candidate, sefs_role)
+        p._score_skill()
 
         assert p.disqualified

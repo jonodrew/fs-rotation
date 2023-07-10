@@ -1,7 +1,7 @@
 from unittest.mock import MagicMock
 
 from fast_stream_22.matching.match import Process, Bid
-from fast_stream_22.matching.models import Candidate
+from fast_stream_22.specialism.models import Candidate
 
 
 class TestProcess:
