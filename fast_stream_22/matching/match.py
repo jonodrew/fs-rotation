@@ -266,9 +266,9 @@ class Process:
                 (
                     candidate_id,
                     role_id,
-                    self.specialism().score_pair(
+                    self.specialism(
                         self.candidate_mapping[candidate_id], role
-                    ),
+                    ).score_pair(self.candidate_mapping[candidate_id], role),
                 )
             )
 
@@ -295,7 +295,7 @@ class Matching:
         random.shuffle(self.candidates)
         random.shuffle(self.roles)
         self.pairs = [
-            self._score_or_disqualify(pair_type(), c, r)
+            self._score_or_disqualify(pair_type(c, r), c, r)
             for c in candidates
             for r in roles
         ]

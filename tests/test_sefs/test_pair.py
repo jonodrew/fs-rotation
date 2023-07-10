@@ -41,7 +41,7 @@ class TestScoreSkill:
         c.year_group = year_group
 
         r = sefs_role
-        p = SefsPair()
+        p = SefsPair(c, r)
         assert p.score == 0
         p._score_skill(c, r)
         assert p.score == score
@@ -55,7 +55,7 @@ class TestScoreSkill:
         sefs_role.skills["Developing the GSE community"] = "P"
         sefs_role.skills["Building and Applying Knowledge"] = "A"
 
-        p = SefsPair()
+        p = SefsPair(sefs_candidate, sefs_role)
         assert p.score == 0
 
         p._score_skill(sefs_candidate, sefs_role)
@@ -70,7 +70,7 @@ class TestScoreSkill:
         sefs_role.skills["Building and Applying Knowledge"] = "A"
         sefs_role.skills["Developing the GSE community"] = "A"
 
-        p = SefsPair()
+        p = SefsPair(sefs_candidate, sefs_role)
         assert p.score == 0
 
         p._score_skill(sefs_candidate, sefs_role)

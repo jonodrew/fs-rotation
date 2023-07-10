@@ -19,7 +19,6 @@ from fast_stream_22.specialism.generalist import (
     ],
 )
 def test_disqualify_secondment_flag(candidate_secondment, role_secondment, expected):
-    p = GeneralistPair()
     c = MagicMock(GeneralistCandidate)
     c.secondment = candidate_secondment
     r = MagicMock(GeneralistRole)
@@ -27,6 +26,7 @@ def test_disqualify_secondment_flag(candidate_secondment, role_secondment, expec
     r.secondment_only = False
     c.year_group = 2
     r.suitable_year_groups = {2}
+    p = GeneralistPair(c, r)
     assert not p.disqualified
     p._check_year_group(c, r)
     assert p.disqualified is expected

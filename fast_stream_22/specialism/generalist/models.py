@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from functools import wraps
-from typing import Callable
+from typing import Callable, Optional
 from fast_stream_22.specialism.pair import BasePair
 from fast_stream_22.specialism.models import Travel, Clearance, Cohort, Candidate, Role
 from fast_stream_22.specialism.pair import register_scoring_method, C, R
@@ -123,9 +123,9 @@ class GeneralistPair(BasePair):
         Cohort.SixMonth: BasePair.min_score[Cohort.Two],
     }
 
-    def __init__(self):
-        super().__init__()
-        self.methods_called = set()
+    def __init__(self, candidate: C, role: R):
+        super().__init__(candidate, role)
+        self.methods_called: set[Optional[str]] = set()
 
     @register_scoring_method
     def _check_accessibility(self, c: GeneralistCandidate, r: GeneralistRole) -> None:

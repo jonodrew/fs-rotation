@@ -1,7 +1,7 @@
 import logging
 import os
 from functools import wraps
-from typing import Callable, TypeVar, Generic
+from typing import Callable, TypeVar, Generic, Self
 
 from fast_stream_22.specialism.models import Candidate, Role, Cohort
 
@@ -55,14 +55,14 @@ class BasePair(Generic[C, R]):
                 cls.scoring_method_names.add(name)
         super().__init_subclass__()
 
-    def __init__(self, candidate: C = None, role: R = None):
+    def __init__(self, candidate: C, role: R):
         self.candidate = candidate
         self.role = role
         self._score: int = 0
         self._disqualified = False
 
     @property
-    def scoring_methods(self) -> set[Callable[[C, R], None]]:
+    def scoring_methods(self) -> set[Callable[[Self], None]]:
         """
         Collect the methods marked for scoring for this class
 
