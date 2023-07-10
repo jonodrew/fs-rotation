@@ -2,8 +2,8 @@ from unittest.mock import Mock
 
 import pytest
 
-from fast_stream_22.matching.SEFS.models import SefsPair, SefsCandidate, SefsRole
-from fast_stream_22.matching.pair import BasePair
+from fast_stream_22.specialism.SEFS.models import SefsPair, SefsCandidate, SefsRole
+from fast_stream_22.specialism.pair import BasePair
 
 
 def test_when_pair_created_scoring_method_added_to_parent_class():

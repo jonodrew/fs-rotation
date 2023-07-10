@@ -2,7 +2,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from fast_stream_22.matching.generalist.models import (
+from fast_stream_22.specialism.generalist import (
     GeneralistPair,
     GeneralistRole,
     GeneralistCandidate,

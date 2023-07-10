@@ -2,13 +2,13 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from fast_stream_22.matching.models import (
+from fast_stream_22.specialism.models import (
     Candidate,
     Role,
     Nationality,
     NationalityRequirement,
 )
-from fast_stream_22.matching.pair import Pair
+from fast_stream_22.specialism.pair import Pair
 
 
 @pytest.fixture

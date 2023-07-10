@@ -1,7 +1,7 @@
 from typing import Literal
 
 from fast_stream_22.matching import Role, Candidate
-from fast_stream_22.matching.pair import register_scoring_method, BasePair
+from fast_stream_22.specialism.pair import register_scoring_method, BasePair
 
 Level = Literal["P", "A", "N"]
 Skills = Literal[

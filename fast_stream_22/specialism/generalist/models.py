@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from functools import wraps
 from typing import Callable
-from fast_stream_22.matching.pair import BasePair
-from fast_stream_22.matching.models import Travel, Clearance, Cohort, Candidate, Role
-from fast_stream_22.matching.pair import register_scoring_method, C, R
+from fast_stream_22.specialism.pair import BasePair
+from fast_stream_22.specialism.models import Travel, Clearance, Cohort, Candidate, Role
+from fast_stream_22.specialism.pair import register_scoring_method, C, R
 
 
 class WorkingPatternsInterface:

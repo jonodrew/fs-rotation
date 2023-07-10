@@ -3,7 +3,7 @@ import os
 from functools import wraps
 from typing import Callable, TypeVar, Generic
 
-from fast_stream_22.matching.models import Candidate, Role, Cohort
+from fast_stream_22.specialism.models import Candidate, Role, Cohort
 
 P = TypeVar("P", bound="BasePair")
 C = TypeVar("C", bound=Candidate)

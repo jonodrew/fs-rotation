@@ -2,7 +2,7 @@ import csv
 
 import pytest
 
-from fast_stream_22.matching.generalist.models import GeneralistCandidate
+from fast_stream_22.specialism.generalist import GeneralistCandidate
 
 
 @pytest.fixture

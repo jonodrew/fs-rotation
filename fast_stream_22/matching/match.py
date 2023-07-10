@@ -21,9 +21,9 @@ from typing import (
 
 from munkres import DISALLOWED, make_cost_matrix, Munkres, UnsolvableMatrix
 
-from fast_stream_22.matching.generalist.models import GeneralistPair
-from fast_stream_22.matching.models import Candidate, Role, BaseClass, Cohort
-from fast_stream_22.matching.pair import Pair, R, C, P
+from fast_stream_22.specialism.generalist import GeneralistPair
+from fast_stream_22.specialism.models import Candidate, Role, BaseClass, Cohort
+from fast_stream_22.specialism.pair import Pair, R, C, P
 import numpy as np
 
 from fast_stream_22.matching.read_in import read_candidates, read_roles

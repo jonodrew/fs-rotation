@@ -4,12 +4,12 @@ import csv
 import functools
 from typing import Type, TypeVar, Optional, MutableSequence
 
-from fast_stream_22.matching.SEFS.models import SefsRole, SefsCandidate
-from fast_stream_22.matching.generalist.models import (
+from fast_stream_22.specialism.SEFS.models import SefsRole, SefsCandidate
+from fast_stream_22.specialism.generalist import (
     GeneralistCandidate,
     GeneralistRole,
 )
-from fast_stream_22.matching.models import Candidate, Role, BaseClass
+from fast_stream_22.specialism.models import Candidate, Role, BaseClass
 
 
 @functools.lru_cache
