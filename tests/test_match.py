@@ -21,12 +21,12 @@ class TestMatchClass:
     def test_match_process_works(self, random_candidates, random_roles):
         with patch("fast_stream_22.specialism.pair.Pair._check_score"):
             m = Matching(random_candidates, random_roles, Pair)
-            pairs = m._match()
+            pairs = m.match()
             assert pairs
 
     def test_reject_impossible_roles(self, random_candidates, random_roles):
         with patch(
-            "fast_stream_22.matching.match.Matching._score_or_disqualify",
+            "fast_stream_22.matching.match.Matching.score_or_disqualify",
             return_value=DISALLOWED,
         ):
             m = Matching(random_candidates, random_roles, Pair)

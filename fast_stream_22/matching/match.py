@@ -295,9 +295,7 @@ class Matching:
         random.shuffle(self.candidates)
         random.shuffle(self.roles)
         self.pairs = [
-            self._score_or_disqualify(pair_type(c, r))
-            for c in candidates
-            for r in roles
+            self.score_or_disqualify(pair_type(c, r)) for c in candidates for r in roles
         ]
         self.score_grid = np.reshape(self.pairs, (len(candidates), len(roles)))
 
@@ -316,14 +314,14 @@ class Matching:
         return rejects
 
     @staticmethod
-    def _score_or_disqualify(p: P) -> Union[DISALLOWED, int]:
+    def score_or_disqualify(p: P) -> Union[DISALLOWED, int]:
         p.score_pair()
         if p.disqualified:
             return DISALLOWED
         else:
             return p.score
 
-    def _match(self):
+    def match(self):
         matrix = make_cost_matrix(
             self.score_grid, lambda x: sys.maxsize - x if type(x) is int else x
         )
@@ -335,8 +333,8 @@ class Matching:
 
         """
         try:
-            pairs = self._match()
-            return [self._convert_pair(p) for p in pairs]
+            pairs = self.match()
+            return [self.convert_pair(p) for p in pairs]
         except UnsolvableMatrix:
             log_copy = self.score_grid.copy()
             log_copy[log_copy == DISALLOWED] = "D"
@@ -348,7 +346,7 @@ class Matching:
             )
             raise UnsolvableMatrix
 
-    def _convert_pair(self, pair: tuple[int, int]) -> tuple[str, str]:
+    def convert_pair(self, pair: tuple[int, int]) -> tuple[str, str]:
         candidate, role = pair
         return self.candidates[candidate].uid, self.roles[role].uid
 
