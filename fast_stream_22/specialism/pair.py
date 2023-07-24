@@ -87,12 +87,20 @@ class BasePair(Generic[C, R]):
 
     @register_scoring_method
     def _check_location(self) -> None:
-        if not self.candidate.can_relocate:
-            self._disqualified = not (
-                self.role.from_anywhere()
-                or self.candidate.first_preference_location in self.role.locations
-                or self.candidate.second_preference_location in self.role.locations
-            )
+        """
+        If a candidate can't relocate, then a Role should be disqualified if both of the following are False:
+        * the Role can be done from anywhere
+        * the Candidate's first or second preference locations are in the Role's locations
+
+        :return:
+        """
+        candidate_cannot_relocate = not self.candidate.can_relocate
+        if candidate_cannot_relocate:
+            role_in_good_location: bool = self.role.from_anywhere() or not {
+                self.candidate.first_preference_location,
+                self.candidate.second_preference_location,
+            }.isdisjoint(self.role.locations)
+            self._disqualified = not role_in_good_location
 
     @register_scoring_method
     def _score_location(self) -> None:
